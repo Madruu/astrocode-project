@@ -1,20 +1,25 @@
-import { Controller, Get, HttpCode, Post, Put } from '@nestjs/common';
+import { Controller, Get, HttpCode, Post, Put, Body } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
+import { CreateUserDto } from 'src/user/dto/create-user.dto/create-user.dto';
+import { User } from 'src/user/entities/user/user.entity';
+import { UserService } from 'src/user/services/user/user.service';
 
 @Controller('user')
 export class UserController {
+  constructor(private readonly userService: UserService) {}
+
   @Get()
   @HttpCode(200)
   @ApiOperation({ summary: 'Get all users' })
-  findAll(): string {
-    return 'All users';
+  findAll(): Promise<User[]> {
+    return this.userService.findAllUsers();
   }
 
   @Post()
   @HttpCode(201)
   @ApiOperation({ summary: 'Create a new user' })
-  create(): string {
-    return 'Create user';
+  create(@Body() user: CreateUserDto): Promise<User> {
+    return this.userService.createUser(user);
   }
 
   @Put()

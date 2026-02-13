@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { JoinTable } from 'typeorm/browser';
+import { Task } from 'src/task/entities/task/task.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -13,4 +15,8 @@ export class User {
 
   @Column({ type: 'varchar' })
   password: string;
+
+  @ManyToMany(() => Task, (task) => task.users)
+  @JoinTable({ name: 'user_tasks' })
+  tasks: Task[];
 }
