@@ -4,13 +4,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from 'src/user/dto/create-user.dto/create-user.dto';
 import { UpdateUserDto } from 'src/user/dto/update-user.dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private userRepository: Repository<User>,
+    private dataSource: DataSource,
   ) {}
+
+  private async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 12);
+  }
 
   async findAllUsers(): Promise<User[]> {
     return this.userRepository.find();
@@ -20,8 +27,21 @@ export class UserService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  async createUser(user: CreateUserDto): Promise<User> {
-    return this.userRepository.save({ ...user, balance: 0 });
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = await this.hashPassword(createUserDto.password);
+
+    // Here, with transactions, we ensure user creation is atomic (Either all or nothing).
+    const resultUser = await this.dataSource.transaction(
+      async (transactionManager) => {
+        const newUser = transactionManager.create(User, {
+          ...createUserDto,
+          password: hashedPassword,
+        });
+        return transactionManager.save(User, newUser);
+      },
+    );
+
+    return resultUser;
   }
 
   async updateUser(id: number, user: UpdateUserDto): Promise<User> {

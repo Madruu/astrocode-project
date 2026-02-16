@@ -8,8 +8,8 @@ export class Auth {
   @Column({ type: 'varchar' })
   token: string;
 
-  @Column({ type: 'boolean' })
-  is_active: boolean;
+  //@Column({ type: 'boolean' })
+  //is_active: boolean;
 
   @ManyToOne(() => User, (user) => user.id)
   user: User;

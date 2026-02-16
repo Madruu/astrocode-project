@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { JoinTable } from 'typeorm/browser';
+import { JoinTable } from 'typeorm';
 import { Task } from 'src/task/entities/task/task.entity';
 
 @Entity({ name: 'users' })
@@ -16,7 +16,7 @@ export class User {
   @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ type: 'number' })
+  @Column({ type: 'numeric', default: 0 })
   balance: number = 0;
 
   @ManyToMany(() => Task, (task) => task.users)
