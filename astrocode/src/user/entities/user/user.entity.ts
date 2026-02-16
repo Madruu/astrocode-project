@@ -16,6 +16,9 @@ export class User {
   @Column({ type: 'varchar' })
   password: string;
 
+  @Column({ type: 'number' })
+  balance: number = 0;
+
   @ManyToMany(() => Task, (task) => task.users)
   @JoinTable({ name: 'user_tasks' })
   tasks: Task[];
