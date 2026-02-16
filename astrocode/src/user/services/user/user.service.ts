@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from 'src/user/entities/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -54,5 +54,22 @@ export class UserService {
 
   async findUserByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
+  }
+
+  async addMoneyToUser(id: number, amount: number): Promise<User> {
+    const userToUpdate = await this.userRepository.findOne({ where: { id } });
+    if (!userToUpdate) {
+      throw new NotFoundException('User not found');
+    }
+    if (amount <= 0) {
+      throw new BadRequestException('Amount must be greater than 0');
+    }
+    if (userToUpdate.balance + amount > 1000000) {
+      throw new BadRequestException('User balance cannot exceed 1000000');
+    }
+    return this.userRepository.save({
+      ...userToUpdate,
+      balance: userToUpdate.balance + amount,
+    });
   }
 }
