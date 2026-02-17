@@ -68,12 +68,19 @@ export class UserService {
     if (amount <= 0) {
       throw new BadRequestException('Amount must be greater than 0');
     }
-    if (userToUpdate.balance + amount > 1000000) {
+
+    const currentBalance = Number(userToUpdate.balance);
+    if (!Number.isFinite(currentBalance)) {
+      throw new BadRequestException('Invalid user balance');
+    }
+
+    const newBalance = currentBalance + amount;
+    if (newBalance > 1000000) {
       throw new BadRequestException('User balance cannot exceed 1000000');
     }
     return this.userRepository.save({
       ...userToUpdate,
-      balance: userToUpdate.balance + amount,
+      balance: newBalance,
     });
   }
   //Add service to purchase a task

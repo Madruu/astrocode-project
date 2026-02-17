@@ -7,6 +7,8 @@ import {
   Body,
   UseGuards,
   Param,
+  BadRequestException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/user/dto/create-user.dto/create-user.dto';
@@ -40,5 +42,20 @@ export class UserController {
   @ApiOperation({ summary: 'Update a user' })
   update(@Body() user: UpdateUserDto, @Param('id') id: number): Promise<User> {
     return this.userService.updateUser(id, user);
+  }
+
+  @Post('add-money/:id')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Add money to a user' })
+  addMoney(
+    @Body('amount') amount: string | number,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<User> {
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount)) {
+      throw new BadRequestException('Amount is required');
+    }
+    return this.userService.addMoneyToUserBalance(id, parsedAmount);
   }
 }
