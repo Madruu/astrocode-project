@@ -12,6 +12,9 @@ export class Task {
   @Column({ type: 'varchar' })
   description: string;
 
+  @Column({ type: 'numeric', default: 0 })
+  price: number = 0;
+
   @ManyToMany(() => User, (user) => user.tasks)
   users: User[];
 }
