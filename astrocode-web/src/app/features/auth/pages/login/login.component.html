@@ -1,0 +1,50 @@
+<mat-card class="login-card">
+  <mat-card-title>Login</mat-card-title>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" />
+      @if (form.get('email')?.hasError('required')) {
+        <mat-error>Email é obrigatório</mat-error>
+      }
+      @if (form.get('email')?.hasError('email')) {
+        <mat-error>Email inválido</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Senha</mat-label>
+      <input matInput type="password" formControlName="password" />
+      @if (form.get('password')?.hasError('required')) {
+        <mat-error>Senha é obrigatória</mat-error>
+      }
+      @if (form.get('password')?.hasError('minlength')) {
+        <mat-error>Mínimo 6 caracteres</mat-error>
+      }
+    </mat-form-field>
+
+    @if  (errorMessage()) {
+      <div class="error">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="loading() || form.invalid"
+      class="full-width"
+    >
+      @if (loading()) {
+        <mat-spinner diameter="20"></mat-spinner>
+      }
+      @if (!loading()) {
+        <span>Entrar</span>
+      }
+    </button>
+
+  </form>
+</mat-card>
