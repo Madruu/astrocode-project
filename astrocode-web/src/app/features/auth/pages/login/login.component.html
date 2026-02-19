@@ -1,50 +1,73 @@
-<mat-card class="login-card">
-  <mat-card-title>Login</mat-card-title>
+<main class="login-container">
+  <mat-card class="login-card">
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-card-title class="login-title">
+      Acesse sua conta
+    </mat-card-title>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" formControlName="email" />
-      @if (form.get('email')?.hasError('required')) {
-        <mat-error>Email é obrigatório</mat-error>
-      }
-      @if (form.get('email')?.hasError('email')) {
-        <mat-error>Email inválido</mat-error>
-      }
-    </mat-form-field>
+    <p class="mock-account">
+      Conta mock: <strong>{{ mockCredentials.email }}</strong> / <strong>{{ mockCredentials.password }}</strong>
+    </p>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Senha</mat-label>
-      <input matInput type="password" formControlName="password" />
-      @if (form.get('password')?.hasError('required')) {
-        <mat-error>Senha é obrigatória</mat-error>
-      }
-      @if (form.get('password')?.hasError('minlength')) {
-        <mat-error>Mínimo 6 caracteres</mat-error>
-      }
-    </mat-form-field>
+    <form 
+      [formGroup]="loginForm" 
+      (ngSubmit)="onSubmit()" 
+      class="login-form">
 
-    @if  (errorMessage()) {
-      <div class="error">
-        {{ errorMessage() }}
-      </div>
+      <mat-form-field 
+        appearance="outline" 
+        class="custom-input">
+
+        <mat-label>Email</mat-label>
+
+        <input 
+          matInput 
+          type="email" 
+          formControlName="email" />
+
+        @if (loginForm.get('email')?.hasError('required')) {
+          <mat-error class="error-message">Email é obrigatório</mat-error>
+        }
+
+        @if (loginForm.get('email')?.hasError('email')) {
+          <mat-error class="error-message">Email inválido</mat-error>
+        }
+
+      </mat-form-field>
+
+      <mat-form-field 
+        appearance="outline" 
+        class="custom-input">
+
+        <mat-label>Senha</mat-label>
+
+        <input 
+          matInput 
+          type="password" 
+          formControlName="password" />
+
+        @if (loginForm.get('password')?.hasError('required')) {
+          <mat-error class="error-message">Senha é obrigatória</mat-error>
+        }
+
+      </mat-form-field>
+
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        class="login-button"
+        [disabled]="loginForm.invalid">
+
+        Entrar
+
+      </button>
+
+    </form>
+
+    @if (errorMessage(); as message) {
+      <p class="error-banner">{{ message }}</p>
     }
 
-    <button
-      mat-raised-button
-      color="primary"
-      type="submit"
-      [disabled]="loading() || form.invalid"
-      class="full-width"
-    >
-      @if (loading()) {
-        <mat-spinner diameter="20"></mat-spinner>
-      }
-      @if (!loading()) {
-        <span>Entrar</span>
-      }
-    </button>
-
-  </form>
-</mat-card>
+  </mat-card>
+</main>

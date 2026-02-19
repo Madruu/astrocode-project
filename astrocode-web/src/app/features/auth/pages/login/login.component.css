@@ -1,0 +1,119 @@
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #38a3a5;
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  padding: 40px;
+  background-color: #57cc99;
+  border-radius: 16px;
+}
+
+.login-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: #22577a;
+}
+
+.mock-account {
+  margin: 0 0 22px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(34, 87, 122, 0.1);
+  color: #22577a;
+  font-size: 0.9rem;
+}
+
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-button {
+  margin-top: 10px;
+  height: 45px;
+  font-weight: 500;
+}
+
+
+.custom-input {
+  width: 100%;
+}
+
+:host ::ng-deep .custom-input .mat-mdc-text-field-wrapper {
+  position: relative;
+  background-color: #80ed99;
+  border-radius: 12px;
+  overflow: visible;
+  isolation: isolate;
+}
+
+:host ::ng-deep .custom-input .mat-mdc-text-field-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid #22577a;
+  border-radius: 12px;
+  pointer-events: none;
+  border-width: 3px;
+  z-index: 0;
+}
+
+:host ::ng-deep .custom-input .mat-mdc-input-element {
+  color: white;
+}
+
+:host ::ng-deep .custom-input .mdc-notched-outline__leading,
+:host ::ng-deep .custom-input .mdc-notched-outline__notch,
+:host ::ng-deep .custom-input .mdc-notched-outline__trailing {
+  border-color: transparent !important;
+}
+
+
+:host ::ng-deep .custom-input .mdc-floating-label {
+  position: relative;
+  z-index: 2;
+  padding-left: 10px;
+  color: #22577a !important;
+}
+
+:host ::ng-deep .custom-input.mat-focused .mdc-floating-label {
+  color: #22577a !important;
+}
+
+:host ::ng-deep .custom-input .mdc-floating-label--float-above {
+  background-color: #80ed99;
+  padding: 3px 6px ;
+  border-radius: 4px;
+  border: 3px solid #22577a;
+}
+
+:host ::ng-deep .custom-input.mat-focused .mat-mdc-text-field-wrapper::after {
+  border-color: #22577a;
+}
+
+.error-message {
+  color: #c9184a;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.error-banner {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(201, 24, 74, 0.12);
+  color: #c9184a;
+  font-weight: 600;
+}

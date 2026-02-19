@@ -1,0 +1,202 @@
+.layout {
+  height: 100vh;
+  background: #f3f6fb;
+}
+
+.sidebar {
+  width: 240px;
+  border-right: 1px solid #e2e8f0;
+  background: #111827;
+  color: #fff;
+}
+
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1rem;
+  font-weight: 600;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  margin-right: 0.75rem;
+}
+
+.main-content {
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  padding: 1rem;
+}
+
+.summary-card p {
+  margin: 0;
+  color: #475569;
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.4rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+
+.day {
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: #fff;
+  min-height: 90px;
+  text-align: left;
+  padding: 0.45rem;
+  cursor: pointer;
+}
+
+.day:hover {
+  border-color: #6b9cff;
+}
+
+.outside {
+  opacity: 0.45;
+}
+
+.day-number {
+  font-weight: 600;
+}
+
+.pills {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.pill {
+  border-radius: 20px;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.72rem;
+  width: fit-content;
+}
+
+.pill.blocked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.pill.booked {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.upcoming-card h3 {
+  margin-top: 0;
+}
+
+.booking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.booking-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 0.7rem;
+}
+
+.booking-info {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.booking-info span {
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.status {
+  text-transform: capitalize;
+}
+
+.empty {
+  color: #6b7280;
+}
+
+@media (max-width: 1200px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 920px) {
+  .sidebar {
+    display: none;
+  }
+}

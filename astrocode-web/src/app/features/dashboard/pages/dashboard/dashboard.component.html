@@ -1,0 +1,113 @@
+<mat-sidenav-container class="layout">
+  <mat-sidenav mode="side" opened class="sidebar">
+    <div class="brand">
+      <mat-icon>event_available</mat-icon>
+      <span>Astrocode Agenda</span>
+    </div>
+
+    <mat-nav-list>
+      <a mat-list-item href="javascript:void(0)">Dashboard</a>
+      <a mat-list-item href="javascript:void(0)">Servicos</a>
+      <a mat-list-item href="javascript:void(0)">Agenda</a>
+      <a mat-list-item href="javascript:void(0)">Pagamentos</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <mat-toolbar class="header">
+      <span class="title">Plataforma de Agendamento</span>
+      <span class="spacer"></span>
+      <span class="user-name">{{ (user$ | async)?.name }}</span>
+      <button mat-button (click)="logout()">Sair</button>
+    </mat-toolbar>
+
+    @if (loading$ | async) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <main class="main-content">
+      <section class="summary-grid">
+        @if (summary$ | async; as summary) {
+          <mat-card class="summary-card">
+            <p>Total de agendamentos</p>
+            <strong>{{ summary.totalBookings }}</strong>
+          </mat-card>
+          <mat-card class="summary-card">
+            <p>Confirmados</p>
+            <strong>{{ summary.confirmedBookings }}</strong>
+          </mat-card>
+          <mat-card class="summary-card">
+            <p>Cancelados</p>
+            <strong>{{ summary.cancelledBookings }}</strong>
+          </mat-card>
+          <mat-card class="summary-card">
+            <p>Receita total</p>
+            <strong>{{ summary.totalRevenue | currency: 'BRL' }}</strong>
+          </mat-card>
+        }
+      </section>
+
+      <section class="dashboard-grid">
+        <mat-card class="calendar-card">
+          <div class="calendar-header">
+            <div class="actions">
+              <button mat-icon-button (click)="previousRange()" aria-label="Periodo anterior">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <button mat-icon-button (click)="nextRange()" aria-label="Proximo periodo">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+            <div class="actions">
+              <button mat-stroked-button (click)="setMode('month')">Mensal</button>
+              <button mat-stroked-button (click)="setMode('week')">Semanal</button>
+              <button mat-flat-button color="primary" (click)="openNewBooking()">Novo agendamento</button>
+            </div>
+          </div>
+
+          <div class="weekdays">
+            <span>Dom</span>
+            <span>Seg</span>
+            <span>Ter</span>
+            <span>Qua</span>
+            <span>Qui</span>
+            <span>Sex</span>
+            <span>Sab</span>
+          </div>
+
+          
+        </mat-card>
+
+        <mat-card class="upcoming-card">
+          <h3>Proximos agendamentos</h3>
+          @if (upcomingBookings$ | async; as upcoming) {
+            @if (upcoming.length === 0) {
+              <p class="empty">Nenhum agendamento futuro.</p>
+            } @else {
+              <ul class="booking-list">
+                @for (booking of upcoming; track booking.id) {
+                  <li>
+                    <div class="booking-info">
+                      <strong>{{ booking.clientName }}</strong>
+                      <span>{{ booking.serviceName }}</span>
+                      <span>{{ booking.startAt | date: 'short' }}</span>
+                      <span class="status">{{ booking.status }}</span>
+                    </div>
+                    <button
+                      mat-button
+                      color="warn"
+                      [disabled]="booking.status !== 'confirmed'"
+                      (click)="cancelBooking(booking.id)"
+                    >
+                      Cancelar
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </mat-card>
+      </section>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
