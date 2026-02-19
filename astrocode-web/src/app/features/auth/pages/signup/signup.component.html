@@ -1,0 +1,93 @@
+<main class="signup-container">
+  <mat-card class="signup-card">
+
+    <mat-card-title class="signup-title">
+      Crie sua conta
+    </mat-card-title>
+
+    <p class="mock-account">
+      Conta mock: <strong>{{ mockCredentials.email }}</strong> / <strong>{{ mockCredentials.password }}</strong>
+    </p>
+
+    <form 
+      [formGroup]="signupForm" 
+      (ngSubmit)="onSubmit()" 
+      class="signup-form">
+
+      <mat-form-field 
+        appearance="outline" 
+        class="custom-input">
+
+        <mat-label>Email</mat-label>
+
+        <input 
+          matInput 
+          type="email" 
+          formControlName="email" />
+
+        @if (signupForm.get('email')?.hasError('required')) {
+          <mat-error class="error-message">Email é obrigatório</mat-error>
+        }
+
+        @if (signupForm.get('email')?.hasError('email')) {
+          <mat-error class="error-message">Email inválido</mat-error>
+        }
+
+      </mat-form-field>
+
+      <mat-form-field 
+        appearance="outline" 
+        class="custom-input">
+
+        <mat-label>Senha</mat-label>
+
+        <input 
+          matInput 
+          type="password" 
+          formControlName="password" />
+
+        @if (signupForm.get('password')?.hasError('required')) {
+          <mat-error class="error-message">Senha é obrigatória</mat-error>
+        }
+
+      </mat-form-field>
+
+      <mat-form-field 
+        appearance="outline" 
+        class="custom-input">
+
+        <mat-label>Confirmar Senha</mat-label>
+      </mat-form-field>
+
+      <input 
+        matInput 
+        type="password" 
+        formControlName="confirmPassword" />
+
+      @if (signupForm.get('confirmPassword')?.hasError('required')) {
+        <mat-error class="error-message">Confirmar senha é obrigatória</mat-error>
+      }
+
+      @if (signupForm.get('confirmPassword')?.hasError('minlength')) {
+        <mat-error class="error-message">Confirmar senha deve ter pelo menos 6 caracteres</mat-error>
+      }
+
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        class="signup-button"
+        [disabled]="signupForm.invalid">
+
+        Criar conta
+
+      </button>
+
+    </form>
+
+    @if (errorMessage(); as message) {
+      <p class="error-banner">{{ message }}</p>
+    }
+
+  </mat-card>
+</main>
