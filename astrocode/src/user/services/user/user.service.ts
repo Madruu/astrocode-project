@@ -33,7 +33,6 @@ export class UserService {
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     const hashedPassword = await this.hashPassword(createUserDto.password);
-
     // Here, with transactions, we ensure user creation is atomic (Either all or nothing).
     const resultUser = await this.dataSource.transaction(
       async (transactionManager) => {
@@ -83,5 +82,6 @@ export class UserService {
       balance: newBalance,
     });
   }
+
   //Add service to purchase a task
 }

@@ -13,6 +13,12 @@ interface LoginResponse {
   user: AuthUser;
 }
 
+interface SignupResponse {
+  accessToken: string;
+  user: AuthUser;
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -56,6 +62,23 @@ export class AuthService {
           localStorage.setItem(this.tokenKey, response.accessToken);
           localStorage.setItem(this.userKey, JSON.stringify(response.user));
           this.currentUserSubject.next(response.user);
+        }),
+        map((response) => response.user)
+      );
+  }
+
+  signup(credentials: { email: string; password: string }): Observable<AuthUser> {
+    return this.http
+      .post<SignupResponse>('/api/signup', {
+        email: credentials.email,
+        password: credentials.password,
+      })
+      .pipe(
+        catchError(() => {
+          return throwError(() => new Error('Erro ao criar conta'));
+        }),
+        tap((response) => {
+          localStorage.setItem(this.tokenKey, response.accessToken);
         }),
         map((response) => response.user)
       );

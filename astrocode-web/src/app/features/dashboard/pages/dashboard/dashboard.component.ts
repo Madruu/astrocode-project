@@ -16,6 +16,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { Booking, BookingService } from '../../../../core/services/booking.service';
 import { LoadingService } from '../../../../core/services/loading.service';
 import { ScheduleService } from '../../../../core/services/schedule.service';
+import { BookingDetailsDialogComponent } from '../../components/booking-detail-dialog/booking-details-dialog.component';
 
 type CalendarMode = 'month' | 'week';
 
@@ -104,17 +105,17 @@ export class DashboardComponent implements OnDestroy {
     this.focusDateSubject.next(current);
   }
 
-
-  openNewBooking(): void {
-    combineLatest([this.user$, this.bookings$])
-      .pipe(
-        take(1),
-        filter((result): result is [NonNullable<(typeof result)[0]>, Booking[]] => !!result[0]),
-        takeUntil(this.destroy$)
-      )
-
-
+  openDayDetails(day: CalendarDayVm): void {
+    this.dialog.open(BookingDetailsDialogComponent, {
+      width: '640px',
+      data: {
+        day: day.date,
+        bookings: day.bookings,
+        blockedSlots: day.blockedSlots,
+      },
+    });
   }
+  
 
   cancelBooking(bookingId: string): void {
     this.user$

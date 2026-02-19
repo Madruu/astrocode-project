@@ -61,7 +61,6 @@
             <div class="actions">
               <button mat-stroked-button (click)="setMode('month')">Mensal</button>
               <button mat-stroked-button (click)="setMode('week')">Semanal</button>
-              <button mat-flat-button color="primary" (click)="openNewBooking()">Novo agendamento</button>
             </div>
           </div>
 
@@ -75,7 +74,21 @@
             <span>Sab</span>
           </div>
 
-          
+          <div class="calendar-grid">
+            @for (day of calendarDays$ | async; track day.date.toISOString()) {
+              <button class="day" [class.outside]="!day.inCurrentMonth" (click)="openDayDetails(day)">
+                <span class="day-number">{{ day.date | date: 'd' }}</span>
+                <div class="pills">
+                  @if (day.blockedSlots.length > 0) {
+                    <span class="pill blocked">{{ day.blockedSlots.length }} bloqueado(s)</span>
+                  }
+                  @if (day.bookings.length > 0) {
+                    <span class="pill booked">{{ day.bookings.length }} servico(s)</span>
+                  }
+                </div>
+              </button>
+            }
+          </div>
         </mat-card>
 
         <mat-card class="upcoming-card">

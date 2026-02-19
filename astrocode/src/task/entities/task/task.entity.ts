@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { User } from 'src/user/entities/user/user.entity';
+import { Booking } from 'src/booking/entities/booking/booking.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 @Entity({ name: 'tasks' })
 export class Task {
@@ -15,6 +15,6 @@ export class Task {
   @Column({ type: 'numeric', default: 0 })
   price: number = 0;
 
-  @ManyToMany(() => User, (user) => user.tasks)
-  users: User[];
+  @OneToMany(() => Booking, (booking) => booking.task)
+  bookings: Booking[];
 }

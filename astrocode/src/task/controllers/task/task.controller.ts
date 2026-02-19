@@ -5,6 +5,7 @@ import {
   Body,
   Get,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation } from '@nestjs/swagger';
@@ -21,7 +22,11 @@ export class TaskController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Create a new task' })
   create(@Body() task: CreateTaskDto): Promise<Task> {
-    return this.taskService.createTask(task);
+    try {
+      return this.taskService.createTask(task);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Get()
@@ -29,6 +34,10 @@ export class TaskController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all tasks' })
   findAll(): Promise<Task[]> {
-    return this.taskService.findAllTasks();
+    try {
+      return this.taskService.findAllTasks();
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

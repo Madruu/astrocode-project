@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { JoinTable } from 'typeorm';
-import { Task } from 'src/task/entities/task/task.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { OneToMany } from 'typeorm/browser';
+import { Booking } from 'src/booking/entities/booking/booking.entity';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('identity', { type: 'int' })
@@ -20,7 +20,6 @@ export class User {
   @Column({ type: 'numeric', default: 0 })
   balance: number = 0;
 
-  @ManyToMany(() => Task, (task) => task.users)
-  @JoinTable({ name: 'user_tasks' })
-  tasks: Task[];
+  @OneToMany(() => Booking, (booking) => booking.user)
+  bookings: Booking[];
 }

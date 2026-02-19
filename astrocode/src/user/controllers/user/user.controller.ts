@@ -25,7 +25,11 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all users' })
   findAll(): Promise<User[]> {
-    return this.userService.findAllUsers();
+    try {
+      return this.userService.findAllUsers();
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Post()
@@ -33,7 +37,11 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Create a new user' })
   create(@Body() user: CreateUserDto): Promise<User> {
-    return this.userService.createUser(user);
+    try {
+      return this.userService.createUser(user);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Put(':id')
@@ -41,7 +49,11 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Update a user' })
   update(@Body() user: UpdateUserDto, @Param('id') id: number): Promise<User> {
-    return this.userService.updateUser(id, user);
+    try {
+      return this.userService.updateUser(id, user);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Post('add-money/:id')
@@ -52,10 +64,14 @@ export class UserController {
     @Body('amount') amount: string | number,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<User> {
-    const parsedAmount = Number(amount);
-    if (!Number.isFinite(parsedAmount)) {
-      throw new BadRequestException('Amount is required');
+    try {
+      const parsedAmount = Number(amount);
+      if (!Number.isFinite(parsedAmount)) {
+        throw new BadRequestException('Amount is required');
+      }
+      return this.userService.addMoneyToUserBalance(id, parsedAmount);
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
-    return this.userService.addMoneyToUserBalance(id, parsedAmount);
   }
 }

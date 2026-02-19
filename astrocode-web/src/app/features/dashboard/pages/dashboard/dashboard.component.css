@@ -10,7 +10,6 @@
   color: #fff;
 }
 
-
 .brand {
   display: flex;
   align-items: center;
@@ -75,6 +74,10 @@
   gap: 1rem;
 }
 
+.calendar-card,
+.upcoming-card {
+  padding: 1rem;
+}
 
 .calendar-header {
   display: flex;
@@ -99,6 +102,11 @@
   font-size: 0.85rem;
 }
 
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(90px, 1fr));
+  gap: 0.5rem;
+}
 
 .day {
   border: 1px solid #dbe3ef;
