@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { TaskModule } from './task/task.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TaskModule } from './task/task.module';
     UserModule,
     AuthModule,
     TaskModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

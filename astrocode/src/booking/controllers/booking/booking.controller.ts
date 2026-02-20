@@ -23,13 +23,9 @@ export class BookingController {
   @HttpCode(201)
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Create a new booking' })
-  create(
-    @Body() booking: CreateBookingDto,
-    @Req() req: Request & { user: User },
-  ): Promise<Booking> {
+  create(@Body() booking: CreateBookingDto): Promise<Booking> {
     try {
-      const userId = req.user.id;
-      return this.bookingService.createBooking(booking, userId);
+      return this.bookingService.createBooking(booking);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

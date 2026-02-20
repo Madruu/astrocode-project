@@ -59,4 +59,26 @@ export class AuthService {
       token: token,
     };
   }
+
+  async signOut(userId: number): Promise<void> {
+    await this.authRepository.delete({ user: { id: userId } });
+    const token = await this.jwtService.signAsync({
+      sub: userId,
+      type: 'logout',
+      active: true,
+      user: { id: userId },
+    });
+    if (!token) {
+      throw new HttpException('Erro ao gerar token', 500);
+    }
+    await this.authRepository.save({
+      token: token,
+      type: 'logout',
+      active: true,
+      user: { id: userId },
+    });
+    if (!token) {
+      throw new HttpException('Erro ao gerar token', 500);
+    }
+  }
 }

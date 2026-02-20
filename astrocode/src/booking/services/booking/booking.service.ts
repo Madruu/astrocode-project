@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { CreateBookingDto } from 'src/booking/dto/booking/create-booking/create-booking.dto';
 import { Task } from 'src/task/entities/task/task.entity';
 import { User } from 'src/user/entities/user/user.entity';
+import { CancelBookingDto } from 'src/booking/dto/booking/create-booking/create-booking.dto';
 
 @Injectable()
 export class BookingService {
@@ -21,10 +22,7 @@ export class BookingService {
     private dataSource: DataSource,
   ) {}
 
-  async createBooking(
-    bookingDto: CreateBookingDto,
-    userId: number,
-  ): Promise<Booking> {
+  async createBooking(bookingDto: CreateBookingDto): Promise<Booking> {
     const scheduledDate = new Date(bookingDto.scheduledDate);
 
     if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
@@ -33,7 +31,7 @@ export class BookingService {
 
     return this.dataSource.transaction(async (manager) => {
       const user = await manager.findOne(User, {
-        where: { id: userId },
+        where: { id: bookingDto.userId },
       });
 
       const task = await manager.findOne(Task, {
@@ -80,5 +78,27 @@ export class BookingService {
       throw new NotFoundException('Bookings not found');
     }
     return foundBookings;
+  }
+
+  async cancelBooking(cancelBookingDto: CancelBookingDto): Promise<Booking> {
+    return this.dataSource.transaction(async (manager) => {
+      const bookingToCancel = await manager.findOne(Booking, {
+        where: { id: cancelBookingDto.bookingId },
+      });
+      if (!bookingToCancel) {
+        throw new NotFoundException('Booking not found');
+      }
+      const user = await manager.findOne(User, {
+        where: { id: bookingToCancel.user.id },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      user.balance += Number(bookingToCancel.task.price);
+      await manager.save(user);
+      bookingToCancel.status = 'cancelled';
+      await manager.save(bookingToCancel);
+      return bookingToCancel;
+    });
   }
 }

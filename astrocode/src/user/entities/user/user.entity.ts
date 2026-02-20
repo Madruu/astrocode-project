@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { OneToMany } from 'typeorm/browser';
+import { OneToMany } from 'typeorm';
 import { Booking } from 'src/booking/entities/booking/booking.entity';
 @Entity({ name: 'users' })
 export class User {

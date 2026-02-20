@@ -17,6 +17,7 @@ import { Booking, BookingService } from '../../../../core/services/booking.servi
 import { LoadingService } from '../../../../core/services/loading.service';
 import { ScheduleService } from '../../../../core/services/schedule.service';
 import { BookingDetailsDialogComponent } from '../../components/booking-detail-dialog/booking-details-dialog.component';
+import { NewBookingDialogComponent } from '../../components/new-booking-dialog/new-booking-dialog.component';
 
 type CalendarMode = 'month' | 'week';
 
@@ -115,7 +116,31 @@ export class DashboardComponent implements OnDestroy {
       },
     });
   }
-  
+
+  openNewBooking(): void {
+    combineLatest([this.user$, this.bookings$])
+      .pipe(
+        take(1),
+        filter((result): result is [NonNullable<(typeof result)[0]>, Booking[]] => !!result[0]),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([user, bookings]) => {
+        const dialogRef = this.dialog.open(NewBookingDialogComponent, {
+          width: '760px',
+          data: {
+            userId: user.id,
+            bookings,
+          },
+        });
+
+        dialogRef
+          .afterClosed()
+          .pipe(filter((result) => !!result), takeUntil(this.destroy$))
+          .subscribe(() => {
+            this.snackBar.open('Agenda atualizada com sucesso.', 'Fechar', { duration: 2500 });
+          });
+      });
+  }
 
   cancelBooking(bookingId: string): void {
     this.user$
