@@ -25,11 +25,11 @@
           type="email" 
           formControlName="email" />
 
-        @if (loginForm.get('email')?.hasError('required')) {
+        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
           <mat-error class="error-message">Email é obrigatório</mat-error>
         }
 
-        @if (loginForm.get('email')?.hasError('email')) {
+        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')) {
           <mat-error class="error-message">Email inválido</mat-error>
         }
 

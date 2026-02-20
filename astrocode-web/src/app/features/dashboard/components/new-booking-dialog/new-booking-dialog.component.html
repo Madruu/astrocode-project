@@ -1,0 +1,55 @@
+<h2 mat-dialog-title>Novo agendamento</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Nome do cliente</mat-label>
+      <input matInput formControlName="clientName" />
+      @if (form.controls.clientName.hasError('required')) {
+        <mat-error>Nome do cliente e obrigatorio.</mat-error>
+      }
+      @if (form.controls.clientName.hasError('minlength')) {
+        <mat-error>Informe ao menos 3 caracteres.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Servico</mat-label>
+      <mat-select formControlName="serviceId">
+        @for (service of serviceOptions$ | async; track service.id) {
+          <mat-option [value]="service.id">{{ displayServiceLabel(service) }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.serviceId.hasError('required')) {
+        <mat-error>Selecione um servico.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Data</mat-label>
+      <input matInput type="date" formControlName="date" />
+      @if (form.controls.date.hasError('required')) {
+        <mat-error>Selecione uma data valida.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Horario disponivel</mat-label>
+      <mat-select formControlName="slot">
+        @for (slot of availableSlots$ | async; track slot.iso) {
+          <mat-option [value]="slot.iso">{{ slot.label }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.slot.hasError('required')) {
+        <mat-error>Selecione um horario.</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close [disabled]="loading">Fechar</button>
+  <button mat-flat-button color="primary" [disabled]="loading" (click)="submit()">
+    {{ loading ? 'Processando...' : 'Confirmar e pagar' }}
+  </button>
+</mat-dialog-actions>
