@@ -5,7 +5,7 @@
       <span>Astrocode Agenda</span>
     </div>
 
-    <mat-nav-list>
+    <mat-nav-list class="menu-list">
       <a mat-list-item href="javascript:void(0)">Dashboard</a>
       <a mat-list-item href="javascript:void(0)">Servicos</a>
       <a mat-list-item href="javascript:void(0)">Agenda</a>
@@ -18,7 +18,7 @@
       <span class="title">Plataforma de Agendamento</span>
       <span class="spacer"></span>
       <span class="user-name">{{ (user$ | async)?.name }}</span>
-      <button mat-button (click)="logout()">Sair</button>
+      <button class="logout-button" mat-button (click)="logout()">Sair</button>
     </mat-toolbar>
 
     @if (loading$ | async) {
@@ -52,16 +52,16 @@
           <div class="calendar-header">
             <div class="actions">
               <button mat-icon-button (click)="previousRange()" aria-label="Periodo anterior">
-                <mat-icon>chevron_left</mat-icon>
+                <mat-icon>‹</mat-icon>
               </button>
               <button mat-icon-button (click)="nextRange()" aria-label="Proximo periodo">
-                <mat-icon>chevron_right</mat-icon>
+                <mat-icon>›</mat-icon>
               </button>
             </div>
             <div class="actions">
-              <button mat-stroked-button (click)="setMode('month')">Mensal</button>
-              <button mat-stroked-button (click)="setMode('week')">Semanal</button>
-              <button mat-flat-button color="primary" (click)="openNewBooking()">Novo agendamento</button>
+              <button class="mode-button" mat-stroked-button (click)="setMode('month')">Mensal</button>
+              <button class="mode-button" mat-stroked-button (click)="setMode('week')">Semanal</button>
+              <button class="new-booking-button" mat-flat-button color="primary" (click)="openNewBooking()">Novo agendamento</button>
             </div>
           </div>
 

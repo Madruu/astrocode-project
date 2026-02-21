@@ -1,18 +1,19 @@
 .layout {
   height: 100vh;
-  background: #f3f6fb;
+  background: #c7f9cc;
 }
 
 .sidebar {
   width: 240px;
   border-right: 1px solid #e2e8f0;
-  background: #111827;
+  background: #22577a;
   color: #fff;
 }
 
 .brand {
   display: flex;
   align-items: center;
+  background: #22577a;
   gap: 0.5rem;
   padding: 1.25rem 1rem;
   font-weight: 600;
@@ -24,8 +25,10 @@
 }
 
 .header {
-  background: #ffffff;
+  background: #0b132b;
+  color: #fff;
   border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem;
 }
 
 .title {
@@ -55,11 +58,13 @@
 
 .summary-card {
   padding: 1rem;
+  background: #38a3a5;
+  color: #0b132b;
 }
 
 .summary-card p {
   margin: 0;
-  color: #475569;
+  color: #0b132b;
 }
 
 .summary-card strong {
@@ -77,6 +82,13 @@
 .calendar-card,
 .upcoming-card {
   padding: 1rem;
+  background: #c7f9cc;
+  color: #0b132b;
+}
+
+.header .logout-button {
+  background: #22577a;
+  color: #fff;
 }
 
 .calendar-header {
@@ -101,7 +113,15 @@
   color: #64748b;
   font-size: 0.85rem;
 }
+.actions .new-booking-button {
+  background: #22577a;
+  color: #fff;
+}
 
+.actions .mode-button {
+  background: #22577a;
+  color: #fff;
+}
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(90px, 1fr));
@@ -111,7 +131,7 @@
 .day {
   border: 1px solid #dbe3ef;
   border-radius: 10px;
-  background: #fff;
+  background: #80ed99;
   min-height: 90px;
   text-align: left;
   padding: 0.45rem;
@@ -173,6 +193,10 @@
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 0.65rem 0.7rem;
+}
+
+.booking-list li button {
+  color: #0b132b;
 }
 
 .booking-info {
