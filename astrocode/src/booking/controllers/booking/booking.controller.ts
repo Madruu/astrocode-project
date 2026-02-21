@@ -8,7 +8,10 @@ import {
   BadRequestException,
   Get,
 } from '@nestjs/common';
-import { CreateBookingDto } from 'src/booking/dto/booking/create-booking/create-booking.dto';
+import {
+  CancelBookingDto,
+  CreateBookingDto,
+} from 'src/booking/dto/booking/create-booking/create-booking.dto';
 import { Booking } from 'src/booking/entities/booking/booking.entity';
 import { BookingService } from 'src/booking/services/booking/booking.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -39,6 +42,18 @@ export class BookingController {
     try {
       const userId = req.user.id;
       return this.bookingService.getBookings(userId);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Post('cancel')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Cancel a booking' })
+  cancelBooking(@Body() cancelBookingDto: CancelBookingDto): Promise<Booking> {
+    try {
+      return this.bookingService.cancelBooking(cancelBookingDto);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

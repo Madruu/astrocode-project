@@ -64,6 +64,8 @@ export class BookingService {
         scheduledDate,
         user,
         task,
+        status: 'booked',
+        paid: true,
       });
 
       return manager.save(newBooking);
