@@ -22,6 +22,58 @@
 .content {
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  isolation: isolate;
+}
+
+.background-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.45;
+  animation: blob-float 18s ease-in-out infinite alternate;
+}
+
+.blob-1 {
+  width: 360px;
+  height: 360px;
+  background: #22577a;
+  top: -130px;
+  left: -110px;
+}
+
+.blob-2 {
+  width: 420px;
+  height: 420px;
+  background: #38a3a5;
+  top: 20%;
+  right: -160px;
+  animation-delay: 2s;
+}
+
+.blob-3 {
+  width: 340px;
+  height: 340px;
+  background: #57cc99;
+  bottom: -140px;
+  left: 35%;
+  animation-delay: 4s;
+}
+
+.header,
+.main-content,
+.content mat-progress-bar {
+  position: relative;
+  z-index: 1;
 }
 
 .header {
@@ -230,5 +282,14 @@
 @media (max-width: 920px) {
   .sidebar {
     display: none;
+  }
+}
+
+@keyframes blob-float {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(45px, -30px) scale(1.12);
   }
 }
