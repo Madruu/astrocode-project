@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { OneToMany } from 'typeorm';
 import { Booking } from 'src/booking/entities/booking/booking.entity';
+import { Payment } from 'src/payment/entities/payment/payment.entity';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('identity', { type: 'int' })
@@ -22,4 +23,7 @@ export class User {
 
   @OneToMany(() => Booking, (booking) => booking.user)
   bookings: Booking[];
+
+  @OneToMany(() => Payment, (payment) => payment.user)
+  payments: Payment[];
 }

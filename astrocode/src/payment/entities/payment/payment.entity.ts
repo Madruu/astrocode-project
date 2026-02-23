@@ -1,15 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { User } from 'src/user/entities/user/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 @Entity({ name: 'payments' })
 export class Payment {
   @PrimaryGeneratedColumn('identity', { type: 'int' })
   id: number;
 
-  @Column({ type: 'varchar' })
-  status: string;
-
-  @Column({ type: 'varchar' })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
   @Column({ type: 'varchar' })
   currency: string;
+
+  @ManyToOne(() => User, (user) => user.payments)
+  user: User;
 }

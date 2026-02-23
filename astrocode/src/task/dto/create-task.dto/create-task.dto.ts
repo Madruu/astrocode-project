@@ -28,3 +28,15 @@ export class CreateTaskDto {
   @IsInt({ each: true })
   users: number[];
 }
+
+export class PurchaseTaskDto {
+  @ApiProperty({ description: 'The task id' })
+  @IsNotEmpty()
+  @IsInt()
+  taskId: number;
+
+  @ApiProperty({ description: 'The user id' })
+  @IsNotEmpty()
+  @IsInt()
+  userId: number;
+}

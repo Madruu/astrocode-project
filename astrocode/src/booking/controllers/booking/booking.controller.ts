@@ -16,7 +16,7 @@ import { Booking } from 'src/booking/entities/booking/booking.entity';
 import { BookingService } from 'src/booking/services/booking/booking.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation } from '@nestjs/swagger';
-import { User } from 'src/user/entities/user/user.entity';
+import { Request } from 'express';
 
 @Controller('booking')
 export class BookingController {
@@ -38,10 +38,11 @@ export class BookingController {
   @HttpCode(200)
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all bookings' })
-  getBookings(@Req() req: Request & { user: User }): Promise<Booking[]> {
+  getBookings(
+    @Req() req: Request & { user: { userId: number } },
+  ): Promise<Booking[]> {
     try {
-      const userId = req.user.id;
-      return this.bookingService.getBookings(userId);
+      return this.bookingService.getBookings(req.user.userId);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -32,6 +32,18 @@ export class UserController {
     }
   }
 
+  @Get(':id')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Get a user by id' })
+  findById(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
+    try {
+      return this.userService.findUserById(id);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
   @Post()
   @HttpCode(201)
   @UseGuards(AuthGuard('jwt'))
