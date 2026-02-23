@@ -1,0 +1,28 @@
+<main class="services-page">
+  <section class="header">
+    <button mat-stroked-button routerLink="/dashboard">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar ao dashboard
+    </button>
+    <h1>Serviços</h1>
+    <p>Gerencie e visualize os serviços disponíveis para agendamento.</p>
+  </section>
+
+  <mat-card class="services-card">
+    <h2>Lista de serviços</h2>
+
+    <mat-list>
+      @for (service of services; track service.title) {
+        <mat-list-item>
+          <div class="service-row">
+            <div class="service-info">
+              <strong>{{ service.title }}</strong>
+              <span>Duração: {{ service.duration }}</span>
+            </div>
+            <span class="price">{{ service.price }}</span>
+          </div>
+        </mat-list-item>
+      }
+    </mat-list>
+  </mat-card>
+</main>

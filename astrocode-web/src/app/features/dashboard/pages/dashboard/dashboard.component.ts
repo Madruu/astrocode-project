@@ -1,6 +1,6 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnDestroy, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,6 +46,7 @@ interface CalendarDayVm {
     MatDialogModule,
     DatePipe,
     CurrencyPipe,
+    RouterLink,
   ],
 })
 export class DashboardComponent implements OnDestroy {
