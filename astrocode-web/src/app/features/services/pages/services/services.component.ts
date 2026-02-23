@@ -36,5 +36,7 @@ export class ServicesComponent {
   readonly loading$ = this.loadingService.isLoading$;
   readonly services = this.services$.pipe(take(1));
   readonly loading = this.loading$.pipe(take(1));
-  
+  openServiceDetails(service: ServiceItem): void {
+    console.log(service);
+  }
 }

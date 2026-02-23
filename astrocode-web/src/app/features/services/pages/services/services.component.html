@@ -11,8 +11,8 @@
   <mat-card class="services-card">
     <h2>Lista de serviços</h2>
 
-    <mat-list>
-      @for (service of services; track service.title) {
+    <mat-list>''
+      @for (service of services$ | async; track service.title) {
         <mat-list-item>
           <div class="service-row">
             <div class="service-info">
@@ -20,6 +20,7 @@
               <span>Duração: {{ service.duration }}</span>
             </div>
             <span class="price">{{ service.price }}</span>
+            <button mat-icon-button (click)="openServiceDetails(service)">+</button>
           </div>
         </mat-list-item>
       }
