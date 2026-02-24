@@ -1,6 +1,6 @@
 .layout {
   height: 100vh;
-  background: #c7f9cc;
+  background: #fff;
 }
 
 .sidebar {
@@ -117,8 +117,8 @@
 
 .summary-card {
   padding: 1rem;
-  background: #38a3a5;
-  color: #0b132b;
+  background: #0b132b;
+  color: #fff;
 }
 
 .summary-card p {
@@ -140,7 +140,7 @@
 
 .kanban-column {
   padding: 1rem;
-  background: #c7f9cc;
+  background: #fff;
   color: #0b132b;
   min-height: 460px;
 }

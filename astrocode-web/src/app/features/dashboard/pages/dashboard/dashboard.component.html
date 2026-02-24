@@ -1,134 +1,145 @@
-<mat-sidenav-container class="layout">
-  <mat-sidenav mode="side" opened class="sidebar">
+<div class="dashboard-page">
+  <header class="topbar">
     <div class="brand">
       <mat-icon>event_available</mat-icon>
-      <span>Astrocode Agenda</span>
+      <span>AgendaFacil</span>
     </div>
 
-    <mat-nav-list class="menu-list">
-      <a mat-list-item routerLink="/dashboard">Dashboard</a>
-      <a mat-list-item routerLink="/services">Serviços</a>
-      <a mat-list-item routerLink="/schedule">Agenda</a>
-    </mat-nav-list>
-  </mat-sidenav>
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link active" routerLink="/dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link" routerLink="/services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>checklist</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link" routerLink="/calendar">
+        <mat-icon>calendar_today</mat-icon>
+        Calendario
+      </a>
+    </nav>
 
-  <mat-sidenav-content class="content">
-    <div class="background-blobs" aria-hidden="true">
-      <span class="blob blob-1"></span>
-      <span class="blob blob-2"></span>
-      <span class="blob blob-3"></span>
-    </div>
-
-    <mat-toolbar class="header">
-      <span class="title">Plataforma de Agendamento</span>
-      <span class="spacer"></span>
-      <button class="account-button" mat-stroked-button routerLink="/account">
-        {{ (user$ | async)?.name || 'Minha conta' }}
+    <div class="user-area">
+      <div class="user-meta">
+        <strong>{{ (user$ | async)?.name || 'Administrador' }}</strong>
+        <span>{{ (user$ | async)?.email || 'admin@exemplo.com' }}</span>
+      </div>
+      <button class="logout-button" mat-stroked-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
       </button>
-      <button class="logout-button" mat-button (click)="logout()">Sair</button>
-    </mat-toolbar>
+    </div>
+  </header>
 
-    @if (loading$ | async) {
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    }
+  @if (loading$ | async) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
 
-    <main class="main-content">
-      <section class="summary-grid">
-        @if (summary$ | async; as summary) {
-          <mat-card class="summary-card">
-            <p>Total de agendamentos</p>
-            <strong>{{ summary.totalBookings }}</strong>
-          </mat-card>
-          <mat-card class="summary-card">
-            <p>Confirmados</p>
-            <strong>{{ summary.confirmedBookings }}</strong>
-          </mat-card>
-          <mat-card class="summary-card">
-            <p>Cancelados</p>
-            <strong>{{ summary.cancelledBookings }}</strong>
-          </mat-card>
-          <mat-card class="summary-card">
-            <p>Receita total</p>
-            <strong>{{ summary.totalRevenue | currency: 'BRL' }}</strong>
+  <main class="main-content">
+    <section class="hero">
+      <h1>Ola, {{ (user$ | async)?.name || 'Administrador' }}!</h1>
+      <p>Bem-vindo ao seu painel de controle</p>
+    </section>
+
+    <section class="summary-grid">
+      @if (summary$ | async; as summary) {
+        <mat-card class="summary-card green">
+          <div class="summary-header">
+            <span>Agendamentos Ativos</span>
+            <mat-icon>assignment</mat-icon>
+          </div>
+          <strong>{{ summary.confirmedBookings }}</strong>
+          <small>{{ upcomingCount$ | async }} proximos</small>
+        </mat-card>
+
+        <mat-card class="summary-card blue">
+          <div class="summary-header">
+            <span>Servicos Disponiveis</span>
+            <mat-icon>work_outline</mat-icon>
+          </div>
+          <strong>{{ servicesCount$ | async }}</strong>
+          <small>{{ summary.totalBookings }} total</small>
+        </mat-card>
+
+        <mat-card class="summary-card cyan">
+          <div class="summary-header">
+            <span>Total Gasto</span>
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <strong>{{ summary.totalRevenue | currency: 'BRL' }}</strong>
+          <small>{{ summary.totalBookings }} pagamentos</small>
+        </mat-card>
+
+        @if (pendingPayments$ | async; as pending) {
+          <mat-card class="summary-card green">
+            <div class="summary-header">
+              <span>Pagamentos Pendentes</span>
+              <mat-icon>schedule</mat-icon>
+            </div>
+            <strong>{{ pending.count }}</strong>
+            <small>{{ pending.amount | currency: 'BRL' }}</small>
           </mat-card>
         }
-      </section>
+      }
+    </section>
 
-      <section class="dashboard-grid">
-        <mat-card class="calendar-card">
-          <div class="calendar-header">
-            <div class="actions">
-              <button mat-icon-button (click)="previousRange()" aria-label="Periodo anterior">
-                <mat-icon>‹</mat-icon>
-              </button>
-              <button mat-icon-button (click)="nextRange()" aria-label="Proximo periodo">
-                <mat-icon>›</mat-icon>
-              </button>
+    <section class="panels-grid">
+      <mat-card class="panel-card">
+        <div class="panel-header">
+          <h2>Proximos Agendamentos</h2>
+          <p>Seus agendamentos confirmados mais proximos</p>
+        </div>
+
+        @if (nextBooking$ | async; as booking) {
+          <div class="next-booking">
+            <div class="booking-top">
+              <strong>{{ booking.serviceName }}</strong>
+              <span>{{ booking.amount | currency: 'BRL' }}</span>
             </div>
-            <div class="actions">
-              <button class="mode-button" mat-stroked-button (click)="setMode('month')">Mensal</button>
-              <button class="mode-button" mat-stroked-button (click)="setMode('week')">Semanal</button>
-              <button class="new-booking-button" mat-flat-button color="primary" (click)="openNewBooking()">Novo agendamento</button>
-            </div>
+            <span>{{ booking.startAt | date: "dd/MM/yyyy 'as' HH:mm" }}</span>
+            <small>Confirmado • Pagamento pendente</small>
           </div>
+        } @else {
+          <p class="empty">Nenhum agendamento futuro.</p>
+        }
 
-          <div class="weekdays">
-            <span>Dom</span>
-            <span>Seg</span>
-            <span>Ter</span>
-            <span>Qua</span>
-            <span>Qui</span>
-            <span>Sex</span>
-            <span>Sab</span>
+        <button class="secondary-action" mat-button routerLink="/schedule">Ver Todos os Agendamentos</button>
+      </mat-card>
+
+      <mat-card class="panel-card">
+        <div class="panel-header">
+          <h2>Acoes Rapidas</h2>
+          <p>Acesse as principais funcionalidades</p>
+        </div>
+
+        <div class="actions-list">
+          <button mat-stroked-button routerLink="/services">
+            <mat-icon>work_outline</mat-icon>
+            Navegar Servicos Disponiveis
+          </button>
+          <button mat-stroked-button type="button">
+            <mat-icon>calendar_today</mat-icon>
+            Ver Calendario Completo
+          </button>
+          <button mat-stroked-button routerLink="/schedule">
+            <mat-icon>event_note</mat-icon>
+            Gerenciar Meus Agendamentos
+          </button>
+        </div>
+
+        @if (summary$ | async; as summary) {
+          <div class="status-grid">
+            <p><span>Confirmados</span> <strong>{{ summary.confirmedBookings }}</strong></p>
+            <p><span>Cancelados</span> <strong>{{ summary.cancelledBookings }}</strong></p>
+            <p><span>Pagamentos Pendentes</span> <strong>{{ pendingCount$ | async }}</strong></p>
           </div>
-
-          <div class="calendar-grid">
-            @for (day of calendarDays$ | async; track day.date.toISOString()) {
-              <button class="day" [class.outside]="!day.inCurrentMonth" (click)="openDayDetails(day)">
-                <span class="day-number">{{ day.date | date: 'd' }}</span>
-                <div class="pills">
-                  @if (day.blockedSlots.length > 0) {
-                    <span class="pill blocked">{{ day.blockedSlots.length }} bloqueado(s)</span>
-                  }
-                  @if (day.bookings.length > 0) {
-                    <span class="pill booked">{{ day.bookings.length }} servico(s)</span>
-                  }
-                </div>
-              </button>
-            }
-          </div>
-        </mat-card>
-
-        <mat-card class="upcoming-card">
-          <h3>Proximos agendamentos</h3>
-          @if (upcomingBookings$ | async; as upcoming) {
-            @if (upcoming.length === 0) {
-              <p class="empty">Nenhum agendamento futuro.</p>
-            } @else {
-              <ul class="booking-list">
-                @for (booking of upcoming; track booking.id) {
-                  <li>
-                    <div class="booking-info">
-                      <strong>{{ booking.clientName }}</strong>
-                      <span>{{ booking.serviceName }}</span>
-                      <span>{{ booking.startAt | date: 'short' }}</span>
-                      <span class="status">{{ booking.status }}</span>
-                    </div>
-                    <button
-                      mat-button
-                      color="warn"
-                      [disabled]="booking.status !== 'confirmed'"
-                      (click)="cancelBooking(booking.id)"
-                    >
-                      Cancelar
-                    </button>
-                  </li>
-                }
-              </ul>
-            }
-          }
-        </mat-card>
-      </section>
-    </main>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+        }
+      </mat-card>
+    </section>
+  </main>
+</div>
