@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  <mat-list>
+    <mat-list-item>
+      <mat-icon matListItemIcon>schedule</mat-icon>
+      <span matListItemTitle>Duração</span>
+      <span matListItemLine>{{ data.duration }}</span>
+    </mat-list-item>
+
+    <mat-list-item>
+      <mat-icon matListItemIcon>payments</mat-icon>
+      <span matListItemTitle>Preço</span>
+      <span matListItemLine>{{ data.price }}</span>
+    </mat-list-item>
+
+    <mat-list-item>
+      <mat-icon matListItemIcon>tag</mat-icon>
+      <span matListItemTitle>Código</span>
+      <span matListItemLine>{{ data.id }}</span>
+    </mat-list-item>
+  </mat-list>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close>Fechar</button>
+</mat-dialog-actions>

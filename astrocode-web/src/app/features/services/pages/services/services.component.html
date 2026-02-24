@@ -11,7 +11,7 @@
   <mat-card class="services-card">
     <h2>Lista de serviços</h2>
 
-    <mat-list>''
+    <mat-list>
       @for (service of services$ | async; track service.title) {
         <mat-list-item>
           <div class="service-row">
@@ -20,7 +20,9 @@
               <span>Duração: {{ service.duration }}</span>
             </div>
             <span class="price">{{ service.price }}</span>
-            <button mat-icon-button (click)="openServiceDetails(service)">+</button>
+            <button mat-icon-button aria-label="Ver detalhes do serviço" (click)="openServiceDetails(service)">
+              <mat-icon>+</mat-icon>
+            </button>
           </div>
         </mat-list-item>
       }
