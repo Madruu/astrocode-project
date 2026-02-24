@@ -1,6 +1,6 @@
 .layout {
   height: 100vh;
-  background: #fff;
+  background: #c7f9cc;
 }
 
 .sidebar {
@@ -13,7 +13,6 @@
 .brand {
   display: flex;
   align-items: center;
-  background: #22577a;
   gap: 0.5rem;
   padding: 1.25rem 1rem;
   font-weight: 600;
@@ -91,12 +90,17 @@
   flex: 1;
 }
 
-.header .account-button {
+.account-button {
   font-size: 0.9rem;
   margin-right: 0.75rem;
   color: #fff;
-  border-color: #22577a;
+  border-color: #38a3a5;
   background: rgba(56, 163, 165, 0.15);
+}
+
+.header .logout-button {
+  background: #22577a;
+  color: #fff;
 }
 
 .main-content {
@@ -113,13 +117,12 @@
 
 .summary-card {
   padding: 1rem;
-  background: #0b132b;
-  color: #fff;
+  background: #38a3a5;
+  color: #0b132b;
 }
 
 .summary-card p {
   margin: 0;
-  color: #fff;
 }
 
 .summary-card strong {
@@ -128,147 +131,109 @@
   font-size: 1.4rem;
 }
 
-.dashboard-grid {
+.kanban-board {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
   gap: 1rem;
+  align-items: start;
 }
 
-.calendar-card,
-.upcoming-card {
+.kanban-column {
   padding: 1rem;
-  background: #fff;
+  background: #c7f9cc;
   color: #0b132b;
+  min-height: 460px;
 }
 
-.header .logout-button {
-  background: #22577a;
-  color: #fff;
+.column-active {
+  border-top: 4px solid #2563eb;
 }
 
-.calendar-header {
+.column-done {
+  border-top: 4px solid #16a34a;
+}
+
+.column-cancelled {
+  border-top: 4px solid #dc2626;
+}
+
+.column-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.6rem;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.column-header h3 {
+  margin: 0;
 }
 
-.weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  color: #64748b;
-  font-size: 0.85rem;
-}
-.actions .new-booking-button {
-  background: #22577a;
+.column-count {
+  border-radius: 999px;
+  background: #0b132b;
   color: #fff;
+  min-width: 1.8rem;
+  text-align: center;
+  font-size: 0.78rem;
+  padding: 0.2rem 0.45rem;
 }
 
-.actions .mode-button {
-  background: #22577a;
-  color: #fff;
-}
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(90px, 1fr));
-  gap: 0.5rem;
+.column-total {
+  margin: 0.55rem 0 0.85rem;
+  color: #334155;
+  font-size: 0.88rem;
 }
 
-.day {
-  border: 1px solid #dbe3ef;
-  border-radius: 10px;
-  background: #80ed99;
-  min-height: 90px;
-  text-align: left;
-  padding: 0.45rem;
-  cursor: pointer;
-}
-
-.day:hover {
-  border-color: #6b9cff;
-}
-
-.outside {
-  opacity: 0.45;
-}
-
-.day-number {
-  font-weight: 600;
-}
-
-.pills {
-  margin-top: 0.45rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.pill {
-  border-radius: 20px;
-  padding: 0.15rem 0.45rem;
-  font-size: 0.72rem;
-  width: fit-content;
-}
-
-.pill.blocked {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.pill.booked {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.upcoming-card h3 {
-  margin-top: 0;
-}
-
-.booking-list {
+.kanban-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: 0.7rem;
 }
 
-.booking-list li {
+.booking-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.55rem;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.65rem 0.75rem;
+}
+
+.card-top {
+  width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 0.65rem 0.7rem;
+  gap: 0.75rem;
+  align-items: baseline;
 }
 
-.booking-list li button {
+.card-top strong {
   color: #0b132b;
 }
 
-.booking-info {
+.card-top span {
+  color: #475569;
+  font-size: 0.8rem;
+}
+
+.card-main {
+  width: 100%;
   display: grid;
   gap: 0.2rem;
 }
 
-.booking-info span {
+.card-main span {
   color: #475569;
-  font-size: 0.85rem;
-}
-
-.status {
-  text-transform: capitalize;
+  font-size: 0.83rem;
 }
 
 .empty {
+  margin: 0.45rem 0 0.1rem;
   color: #6b7280;
 }
 
@@ -277,14 +242,22 @@
     grid-template-columns: repeat(2, minmax(150px, 1fr));
   }
 
-  .dashboard-grid {
-    grid-template-columns: 1fr;
+  .kanban-board {
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
   }
 }
 
 @media (max-width: 920px) {
   .sidebar {
     display: none;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kanban-board {
+    grid-template-columns: 1fr;
   }
 }
 

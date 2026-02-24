@@ -1,0 +1,115 @@
+.layout {
+  height: 100vh;
+  background: #fff;
+}
+
+.sidebar {
+  width: 240px;
+  border-right: 1px solid #e2e8f0;
+  background: #22577a;
+  color: #fff;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1rem;
+  font-weight: 600;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: #0b132b;
+  color: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.header .logout-button {
+  background: #22577a;
+  color: #fff;
+}
+
+.main-content {
+  padding: 1.25rem;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.account-card {
+  width: 100%;
+  padding: 1rem;
+  background: #fff;
+  color: #0b132b;
+}
+
+.account-card h2 {
+  margin-top: 0;
+}
+
+.wallet-card {
+  width: 100%;
+  padding: 1rem;
+  background: #fff;
+  color: #0b132b;
+}
+
+.wallet-card button {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+dl {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.row {
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  background: #fff;
+}
+
+dt {
+  color: #475569;
+  font-size: 0.8rem;
+}
+
+dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.actions {
+  margin-top: 1rem;
+}
+
+@media (max-width: 920px) {
+  .sidebar {
+    display: none;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+}

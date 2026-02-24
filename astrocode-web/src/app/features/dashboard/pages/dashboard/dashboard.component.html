@@ -8,8 +8,7 @@
     <mat-nav-list class="menu-list">
       <a mat-list-item routerLink="/dashboard">Dashboard</a>
       <a mat-list-item routerLink="/services">Serviços</a>
-      <a mat-list-item href="javascript:void(0)">Agenda</a>
-      <a mat-list-item href="javascript:void(0)">Pagamentos</a>
+      <a mat-list-item routerLink="/schedule">Agenda</a>
     </mat-nav-list>
   </mat-sidenav>
 
@@ -23,7 +22,9 @@
     <mat-toolbar class="header">
       <span class="title">Plataforma de Agendamento</span>
       <span class="spacer"></span>
-      <span class="user-name">{{ (user$ | async)?.name }}</span>
+      <button class="account-button" mat-stroked-button routerLink="/account">
+        {{ (user$ | async)?.name || 'Minha conta' }}
+      </button>
       <button class="logout-button" mat-button (click)="logout()">Sair</button>
     </mat-toolbar>
 

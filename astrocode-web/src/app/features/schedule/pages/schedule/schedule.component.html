@@ -1,0 +1,109 @@
+<mat-sidenav-container class="layout">
+  <mat-sidenav mode="side" opened class="sidebar">
+    <div class="brand">
+      <mat-icon>event_available</mat-icon>
+      <span>Astrocode Agenda</span>
+    </div>
+
+    <mat-nav-list class="menu-list">
+      <a mat-list-item routerLink="/dashboard">Dashboard</a>
+      <a mat-list-item routerLink="/services">Serviços</a>
+      <a mat-list-item routerLink="/schedule">Agenda</a>
+      <a mat-list-item href="javascript:void(0)">Pagamentos</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <div class="background-blobs" aria-hidden="true">
+      <span class="blob blob-1"></span>
+      <span class="blob blob-2"></span>
+      <span class="blob blob-3"></span>
+    </div>
+
+    <mat-toolbar class="header">
+      <span class="title">Agenda detalhada</span>
+      <span class="spacer"></span>
+      <button class="account-button" mat-stroked-button routerLink="/account">
+        {{ (user$ | async)?.name || 'Minha conta' }}
+      </button>
+      <button class="logout-button" mat-button (click)="logout()">Sair</button>
+    </mat-toolbar>
+
+    @if (loading$ | async) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <main class="main-content">
+      <section class="summary-grid">
+        @if (kanbanSummary$ | async; as summary) {
+          <mat-card class="summary-card">
+            <p>Ativos</p>
+            <strong>{{ summary.activeCount }}</strong>
+          </mat-card>
+          <mat-card class="summary-card">
+            <p>Concluídos</p>
+            <strong>{{ summary.concludedCount }}</strong>
+          </mat-card>
+          <mat-card class="summary-card">
+            <p>Cancelados</p>
+            <strong>{{ summary.cancelledCount }}</strong>
+          </mat-card>
+          <mat-card class="summary-card">
+            <p>Receita (ativos + concluídos)</p>
+            <strong>{{ summary.projectedRevenue | currency: 'BRL' }}</strong>
+          </mat-card>
+        }
+      </section>
+
+      <section class="kanban-board">
+        @if (kanbanColumns$ | async; as columns) {
+          @for (column of columns; track column.id) {
+            <mat-card class="kanban-column" [class.column-active]="column.id === 'ativos'" [class.column-done]="column.id === 'concluidos'" [class.column-cancelled]="column.id === 'cancelados'">
+              <header class="column-header">
+                <h3>{{ column.title }}</h3>
+                <span class="column-count">{{ column.bookings.length }}</span>
+              </header>
+
+              <p class="column-total">Total: {{ column.totalAmount | currency: 'BRL' }}</p>
+
+              @if (column.bookings.length === 0) {
+                <p class="empty">{{ column.emptyMessage }}</p>
+              } @else {
+                <ul class="kanban-list">
+                  @for (booking of column.bookings; track booking.id) {
+                    <li class="booking-card">
+                      <div class="card-top">
+                        <strong>{{ booking.clientName }}</strong>
+                        <span>{{ booking.startAt | date: 'dd/MM HH:mm' }}</span>
+                      </div>
+                      <div class="card-main">
+                        <span>{{ booking.serviceName }}</span>
+                        <span>Valor: {{ booking.amount | currency: 'BRL' }}</span>
+                        @if (booking.paymentTransactionId) {
+                          <span>Transação: {{ booking.paymentTransactionId }}</span>
+                        }
+                        @if (booking.status === 'cancelled' && booking.cancelledAt) {
+                          <span>Cancelado em: {{ booking.cancelledAt | date: 'dd/MM HH:mm' }}</span>
+                        }
+                      </div>
+                      @if (column.id === 'ativos') {
+                        <button
+                          mat-button
+                          color="warn"
+                          [disabled]="!canCancel(booking)"
+                          (click)="cancelBooking(booking.id)"
+                        >
+                          Cancelar
+                        </button>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </mat-card>
+          }
+        }
+      </section>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -24,6 +24,18 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/services/pages/services/services.component').then((m) => m.ServicesComponent),
   },
+  {
+    path: 'schedule',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/schedule/pages/schedule/schedule.component').then((m) => m.ScheduleComponent),
+  },
+  {
+    path: 'account',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/pages/account/account.component').then((m) => m.AccountComponent),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
   { path: '**', redirectTo: 'dashboard' },
 ];
