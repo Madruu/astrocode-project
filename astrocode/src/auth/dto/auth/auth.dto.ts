@@ -22,6 +22,7 @@ export class SignInDto {
 export class LoginResponseDTO {
   user: string;
   token: string;
+  accountType: string;
 }
 
 export class tokenMetadataResponse {

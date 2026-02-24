@@ -29,10 +29,13 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Sign out a user' })
   async signOut(
-    @Req() req: Request & { user: { userId: number; email: string } },
+    @Req()
+    req: Request & {
+      user: { userId: number; email: string; accountType: string };
+    },
   ): Promise<string> {
     try {
-      await this.authService.signOut(req.user.userId);
+      await this.authService.signOut(req.user.userId, req.user.accountType);
       return 'Logout realizado com sucesso';
     } catch (error) {
       throw new BadRequestException(error.message);

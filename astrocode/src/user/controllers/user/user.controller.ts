@@ -46,7 +46,6 @@ export class UserController {
 
   @Post()
   @HttpCode(201)
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Create a new user' })
   create(@Body() user: CreateUserDto): Promise<User> {
     try {

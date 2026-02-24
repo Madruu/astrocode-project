@@ -32,13 +32,26 @@ export class UserService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+    if (existingUser) {
+      throw new BadRequestException('User with this email already exists');
+    }
+
     const hashedPassword = await this.hashPassword(createUserDto.password);
+    const cnpj: string | undefined = createUserDto.cnpj
+      ? String(createUserDto.cnpj)
+      : undefined;
     // Here, with transactions, we ensure user creation is atomic (Either all or nothing).
     const resultUser = await this.dataSource.transaction(
       async (transactionManager) => {
         const newUser = transactionManager.create(User, {
-          ...createUserDto,
+          name: createUserDto.name,
+          email: createUserDto.email,
           password: hashedPassword,
+          accountType: createUserDto.accountType ?? 'USER',
+          cnpj,
         });
         return transactionManager.save(User, newUser);
       },
@@ -52,7 +65,13 @@ export class UserService {
     if (!userToUpdate) {
       throw new NotFoundException('User not found');
     }
-    return this.userRepository.save({ ...userToUpdate, ...user });
+
+    const updatePayload: UpdateUserDto = { ...user };
+    if (user.password) {
+      updatePayload.password = await this.hashPassword(user.password);
+    }
+
+    return this.userRepository.save({ ...userToUpdate, ...updatePayload });
   }
 
   async findUserByEmail(email: string): Promise<User | null> {

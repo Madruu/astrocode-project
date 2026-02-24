@@ -1,10 +1,4 @@
-import {
-  IsNotEmpty,
-  IsString,
-  IsNumber,
-  IsArray,
-  IsInt,
-} from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsInt } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 export class CreateTaskDto {
   @ApiProperty({ description: 'The title of the task' })
@@ -21,12 +15,6 @@ export class CreateTaskDto {
   @IsNotEmpty()
   @IsNumber()
   price: number;
-
-  @ApiProperty({ description: 'The users of the task' })
-  @IsNotEmpty()
-  @IsArray()
-  @IsInt({ each: true })
-  users: number[];
 }
 
 export class PurchaseTaskDto {

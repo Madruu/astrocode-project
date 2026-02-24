@@ -8,9 +8,15 @@ export class Auth {
   @Column({ type: 'varchar' })
   token: string;
 
-  //@Column({ type: 'boolean' })
-  //is_active: boolean;
+  @Column({ type: 'varchar', default: 'login' })
+  type: string;
 
-  @ManyToOne(() => User, (user) => user.id)
-  user: User;
+  @Column({ type: 'boolean', default: true })
+  active: boolean;
+
+  @ManyToOne(() => User, (user) => user.id, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  user?: User;
 }

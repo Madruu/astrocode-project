@@ -1,5 +1,12 @@
 import { Booking } from 'src/booking/entities/booking/booking.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { User } from 'src/user/entities/user/user.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
 
 @Entity({ name: 'tasks' })
 export class Task {
@@ -14,6 +21,12 @@ export class Task {
 
   @Column({ type: 'numeric', default: 0 })
   price: number = 0;
+
+  @ManyToOne(() => User, (provider) => provider.tasksProvided, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  provider: User;
 
   @OneToMany(() => Booking, (booking) => booking.task)
   bookings: Booking[];
