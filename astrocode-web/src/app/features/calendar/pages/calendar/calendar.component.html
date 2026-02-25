@@ -1,0 +1,151 @@
+<div class="calendar-layout">
+  <header class="topbar">
+    <div class="brand">
+      <mat-icon>event_available</mat-icon>
+      <span>AgendaFacil</span>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link" routerLink="/dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link" routerLink="/services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>checklist</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link active" routerLink="/calendar">
+        <mat-icon>calendar_today</mat-icon>
+        Calendario
+      </a>
+    </nav>
+
+    <div class="user-area">
+      <div class="user-meta">
+        <strong>{{ (user$ | async)?.name || 'Administrador' }}</strong>
+        <span>{{ (user$ | async)?.email || 'admin@exemplo.com' }}</span>
+      </div>
+      <button class="logout-button" mat-stroked-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="hero">
+      <h1>Calendario</h1>
+      <p>Visualize seus agendamentos em um calendario mensal</p>
+    </section>
+
+    <section class="calendar-grid">
+      <mat-card class="calendar-card">
+        <div class="calendar-header">
+          <h2>{{ monthLabel() }}</h2>
+          <div class="month-actions">
+            <button mat-stroked-button type="button" (click)="goToCurrentMonth()">Hoje</button>
+            <button mat-icon-button type="button" (click)="goToPreviousMonth()" aria-label="Mes anterior">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button mat-icon-button type="button" (click)="goToNextMonth()" aria-label="Proximo mes">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="weekdays-row">
+          @for (weekday of weekdays; track weekday) {
+            <span>{{ weekday }}</span>
+          }
+        </div>
+
+        <div class="days-grid">
+          @for (cell of calendarCells(); track $index) {
+            @if (cell.date) {
+              <button
+                class="day-cell"
+                type="button"
+                [class.is-today]="cell.isToday"
+                [class.has-bookings]="cell.hasBookings"
+                [class.is-selected]="isSelected(cell.date)"
+                (click)="selectDate(cell.date)"
+              >
+                {{ cell.day }}
+              </button>
+            } @else {
+              <div class="day-cell day-empty"></div>
+            }
+          }
+        </div>
+
+        <div class="legend">
+          <span><i class="tag tag-today"></i>Hoje</span>
+          <span><i class="tag tag-booking"></i>Com agendamentos</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="details-card">
+        @if (selectedDate(); as selectedDate) {
+          <h3>{{ formatSelectedDate(selectedDate) }}</h3>
+          <p class="details-subtitle">Agendamentos encontrados neste dia</p>
+
+          @if (selectedDateBookings().length === 0) {
+            <div class="empty-state">
+              <mat-icon>event_busy</mat-icon>
+              <p>Nenhum agendamento para esta data</p>
+            </div>
+          } @else {
+            <ul class="details-list">
+              @for (booking of selectedDateBookings(); track booking.id) {
+                <li>
+                  <strong>{{ booking.serviceName }}</strong>
+                  <span>{{ booking.startAt | date: 'HH:mm' }} • {{ booking.amount | currency: 'BRL' }}</span>
+                  <small>{{ booking.clientName }}</small>
+                </li>
+              }
+            </ul>
+          }
+        } @else {
+          <h3>Selecione uma data</h3>
+          <p class="details-subtitle">Clique em um dia para ver os detalhes</p>
+          <div class="empty-state">
+            <mat-icon>calendar_month</mat-icon>
+            <p>Selecione uma data no calendario</p>
+          </div>
+        }
+      </mat-card>
+    </section>
+
+    <mat-card class="summary-card">
+      <h3>Resumo do Mes</h3>
+      <p>Estatisticas de {{ monthLabel() }}</p>
+
+      <div class="summary-grid">
+        <div>
+          <strong class="blue">{{ monthSummary().confirmedCount }}</strong>
+          <span>Agendamentos Confirmados</span>
+        </div>
+        <div>
+          <strong class="green">{{ monthSummary().paidCount }}</strong>
+          <span>Pagamentos Realizados</span>
+        </div>
+        <div>
+          <strong class="red">{{ monthSummary().cancelledCount }}</strong>
+          <span>Cancelamentos</span>
+        </div>
+        <div>
+          <strong class="purple">{{ monthSummary().totalSpent | currency: 'BRL' }}</strong>
+          <span>Total Gasto</span>
+        </div>
+      </div>
+    </mat-card>
+  </main>
+
+  <footer class="calendar-footer">
+    <p>© 2026 AgendaFacil. Plataforma de agendamento de servicos.</p>
+  </footer>
+</div>
