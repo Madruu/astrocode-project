@@ -1,31 +1,70 @@
-<main class="services-page">
-  <section class="header">
-    <button mat-stroked-button routerLink="/dashboard">
+<div class="services-layout">
+  <header class="topbar">
+    <div class="brand">
+      <mat-icon>event_available</mat-icon>
+      <span>AgendaFacil</span>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link" routerLink="/dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link active" routerLink="/services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>checklist</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link" routerLink="/account">
+        <mat-icon>person_outline</mat-icon>
+        Conta
+      </a>
+    </nav>
+
+    <button class="back-button" mat-stroked-button routerLink="/dashboard">
       <mat-icon>arrow_back</mat-icon>
-      Voltar ao dashboard
+      Voltar
     </button>
-    <h1>Serviços</h1>
-    <p>Gerencie e visualize os serviços disponíveis para agendamento.</p>
-  </section>
+  </header>
 
-  <mat-card class="services-card">
-    <h2>Lista de serviços</h2>
+  <main class="services-page">
+    <section class="header">
+      <h1>Servicos</h1>
+      <p>Navegue e agende os servicos disponiveis</p>
+    </section>
 
-    <mat-list>
-      @for (service of services$ | async; track service.title) {
-        <mat-list-item>
-          <div class="service-row">
-            <div class="service-info">
-              <strong>{{ service.title }}</strong>
-              <span>Duração: {{ service.duration }}</span>
-            </div>
-            <span class="price">{{ service.price }}</span>
-            <button mat-icon-button aria-label="Ver detalhes do serviço" (click)="openServiceDetails(service)">
-              <mat-icon>+</mat-icon>
-            </button>
+    <section class="services-grid">
+      @for (service of services$ | async; track service.id; let i = $index) {
+        <mat-card class="service-card" [class.alt-card]="i % 2 === 1">
+          <div class="service-info">
+            <h2>{{ service.title }}</h2>
+            <p class="subtitle">{{ service.duration }} de atendimento profissional</p>
           </div>
-        </mat-list-item>
+
+          <div class="meta-row">
+            <span>
+              <mat-icon>schedule</mat-icon>
+              {{ service.duration }}
+            </span>
+            <span>
+              <mat-icon>attach_money</mat-icon>
+              {{ service.price }}
+            </span>
+          </div>
+
+          <button class="book-button" mat-flat-button type="button" (click)="openServiceDetails(service)">
+            <mat-icon>event</mat-icon>
+            Agendar
+          </button>
+        </mat-card>
       }
-    </mat-list>
-  </mat-card>
-</main>
+    </section>
+  </main>
+
+  <footer class="services-footer">
+    <p>© 2026 AgendaFacil. Plataforma de agendamento de servicos.</p>
+  </footer>
+</div>

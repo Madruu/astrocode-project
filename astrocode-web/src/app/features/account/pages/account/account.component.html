@@ -1,61 +1,69 @@
-<mat-sidenav-container class="layout">
-  <mat-sidenav mode="side" opened class="sidebar">
+<div class="account-layout">
+  <header class="topbar">
     <div class="brand">
       <mat-icon>event_available</mat-icon>
-      <span>Astrocode Agenda</span>
+      <span>AgendaFacil</span>
     </div>
 
-    <mat-nav-list class="menu-list">
-      <a mat-list-item routerLink="/dashboard">Dashboard</a>
-      <a mat-list-item routerLink="/services">Serviços</a>
-      <a mat-list-item routerLink="/schedule">Agenda</a>
-      <a mat-list-item routerLink="/account">Conta</a>
-    </mat-nav-list>
-  </mat-sidenav>
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link" routerLink="/dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link" routerLink="/services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>checklist</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link active" routerLink="/account">
+        <mat-icon>person_outline</mat-icon>
+        Conta
+      </a>
+    </nav>
 
-  <mat-sidenav-content class="content">
-    <mat-toolbar class="header">
-      <span class="title">Minha conta</span>
-      <span class="spacer"></span>
-      <button class="logout-button" mat-button (click)="logout()">Sair</button>
-    </mat-toolbar>
+    <button class="logout-button" mat-stroked-button (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Sair
+    </button>
+  </header>
 
-    <main class="main-content">
-      <section class="cards-grid">
-        <mat-card class="account-card">
-          <h2>Dados da conta</h2>
-          @if (user$ | async; as user) {
-            <dl>
-              <div class="row">
-                <dt>Nome</dt>
-                <dd>{{ user.name }}</dd>
-              </div>
-              <div class="row">
-                <dt>Email</dt>
-                <dd>{{ user.email }}</dd>
-              </div>
-              <div class="row">
-                <dt>ID</dt>
-                <dd>{{ user.id }}</dd>
-              </div>
-            </dl>
-          } @else {
-            <p>Nenhuma conta carregada no momento.</p>
-          }
+  <main class="main-content">
+    <section class="cards-grid">
+      <mat-card class="account-card">
+        <h2>Dados da conta</h2>
+        @if (user$ | async; as user) {
+          <dl>
+            <div class="row">
+              <dt>Nome</dt>
+              <dd>{{ user.name }}</dd>
+            </div>
+            <div class="row">
+              <dt>Email</dt>
+              <dd>{{ user.email }}</dd>
+            </div>
+            <div class="row">
+              <dt>ID</dt>
+              <dd>{{ user.id }}</dd>
+            </div>
+          </dl>
+        } @else {
+          <p>Nenhuma conta carregada no momento.</p>
+        }
 
-          <div class="actions">
-            <button mat-stroked-button routerLink="/dashboard">Voltar ao dashboard</button>
-          </div>
-        </mat-card>
+        <div class="actions">
+          <button class="back-button" mat-stroked-button routerLink="/dashboard">Voltar ao dashboard</button>
+        </div>
+      </mat-card>
 
-        <mat-card class="wallet-card">
-          <h2>Carteira</h2>
-          <p>Saldo: R$ 0,00</p>
-          <button mat-stroked-button>Depositar</button>
-          <button mat-stroked-button>Histórico de transações</button>
-
-        </mat-card>
-      </section>
-    </main>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+      <mat-card class="wallet-card">
+        <h2>Carteira</h2>
+        <p>Saldo: R$ 0,00</p>
+        <button class="wallet-button" mat-stroked-button>Depositar</button>
+        <button class="wallet-button" mat-stroked-button>Historico de transacoes</button>
+      </mat-card>
+    </section>
+  </main>
+</div>

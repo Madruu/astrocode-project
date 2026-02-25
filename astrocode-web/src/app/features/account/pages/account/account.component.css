@@ -1,46 +1,71 @@
-.layout {
-  height: 100vh;
-  background: #fff;
+.account-layout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(56, 163, 165, 0.12) 0%, rgba(87, 204, 153, 0.16) 100%);
 }
 
-.sidebar {
-  width: 240px;
-  border-right: 1px solid #e2e8f0;
-  background: #22577a;
-  color: #fff;
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #0b132b;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1.25rem 1rem;
-  font-weight: 600;
+  gap: 0.45rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #ffffff;
 }
 
-.content {
+.brand mat-icon {
+  color: #57cc99;
+}
+
+.top-nav {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
 }
 
-.header {
-  background: #0b132b;
-  color: #fff;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 0.5rem;
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
-.title {
-  font-weight: 600;
+.nav-link mat-icon {
+  font-size: 1rem;
+  height: 1rem;
+  width: 1rem;
 }
 
-.spacer {
-  flex: 1;
+.nav-link:hover {
+  background: rgba(87, 204, 153, 0.2);
 }
 
-.header .logout-button {
+.nav-link.active {
   background: #22577a;
-  color: #fff;
+}
+
+.logout-button {
+  border-color: #22577a;
+  color: #ffffff !important;
+  background: #22577a;
+}
+
+.logout-button mat-icon {
+  margin-right: 0.2rem;
 }
 
 .main-content {
@@ -59,10 +84,14 @@
   padding: 1rem;
   background: #fff;
   color: #0b132b;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
 }
 
 .account-card h2 {
-  margin-top: 0;
+  margin: 0 0 0.8rem;
+  font-size: 1.45rem;
 }
 
 .wallet-card {
@@ -70,6 +99,24 @@
   padding: 1rem;
   background: #fff;
   color: #0b132b;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+}
+
+.wallet-card h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.45rem;
+}
+
+.wallet-card p {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #b7e4c7;
+  background: #f0fff4;
+  color: #22577a;
+  font-weight: 600;
 }
 
 .wallet-card button {
@@ -77,6 +124,21 @@
   width: 100%;
   margin-top: 0.5rem;
 }
+
+.wallet-button {
+  border-color: #57cc99;
+  color: #0b132b !important;
+  background: rgba(87, 204, 153, 0.12);
+  border-radius: 10px;
+}
+
+.back-button {
+  border-color: #cbd5e1;
+  color: #0b132b !important;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
 dl {
   margin: 0;
   display: grid;
@@ -84,10 +146,10 @@ dl {
 }
 
 .row {
-  border: 1px solid #dbe3ef;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 0.6rem 0.75rem;
-  background: #fff;
+  background: #f8fafc;
 }
 
 dt {
@@ -105,8 +167,15 @@ dd {
 }
 
 @media (max-width: 920px) {
-  .sidebar {
-    display: none;
+  .topbar {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+  }
+
+  .top-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
   }
 
   .cards-grid {

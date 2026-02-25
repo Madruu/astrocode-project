@@ -4,11 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { EMPTY, catchError, filter, map, switchMap, take } from 'rxjs';
 
 import { AuthService } from '../../../auth/services/auth.service';
@@ -33,11 +30,8 @@ interface KanbanColumnVm {
     MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatListModule,
     MatProgressBarModule,
-    MatSidenavModule,
     MatSnackBarModule,
-    MatToolbarModule,
     RouterModule,
   ],
 })
