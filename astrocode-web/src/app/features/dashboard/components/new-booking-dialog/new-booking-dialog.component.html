@@ -13,17 +13,28 @@
       }
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Servico</mat-label>
-      <mat-select formControlName="serviceId">
-        @for (service of serviceOptions$ | async; track service.id) {
-          <mat-option [value]="service.id">{{ displayServiceLabel(service) }}</mat-option>
+    @if (data.preselectedServiceId) {
+      <mat-form-field appearance="outline">
+        <mat-label>Servico</mat-label>
+        <input
+          matInput
+          [value]="data.preselectedServiceLabel || data.preselectedServiceId"
+          readonly
+        />
+      </mat-form-field>
+    } @else {
+      <mat-form-field appearance="outline">
+        <mat-label>Servico</mat-label>
+        <mat-select formControlName="serviceId">
+          @for (service of serviceOptions$ | async; track service.id) {
+            <mat-option [value]="service.id">{{ displayServiceLabel(service) }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.serviceId.hasError('required')) {
+          <mat-error>Selecione um servico.</mat-error>
         }
-      </mat-select>
-      @if (form.controls.serviceId.hasError('required')) {
-        <mat-error>Selecione um servico.</mat-error>
-      }
-    </mat-form-field>
+      </mat-form-field>
+    }
 
     <mat-form-field appearance="outline">
       <mat-label>Data</mat-label>

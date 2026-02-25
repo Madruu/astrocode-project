@@ -13,9 +13,11 @@ import { map, of, startWith, switchMap } from 'rxjs';
 import { Booking, BookingService, ServiceOption } from '../../../../core/services/booking.service';
 import { ScheduleService } from '../../../../core/services/schedule.service';
 
-interface NewBookingDialogData {
+export interface NewBookingDialogData {
   userId: string;
   bookings: Booking[];
+  preselectedServiceId?: string;
+  preselectedServiceLabel?: string;
 }
 
 interface SlotOption {
@@ -85,6 +87,11 @@ export class NewBookingDialogComponent {
     private dialogRef: MatDialogRef<NewBookingDialogComponent>,
     private datePipe: DatePipe
   ) {
+    if (data.preselectedServiceId) {
+      this.form.controls.serviceId.setValue(data.preselectedServiceId);
+      this.form.controls.serviceId.disable();
+    }
+
     this.form.controls.date.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.form.controls.slot.reset('');
     });
