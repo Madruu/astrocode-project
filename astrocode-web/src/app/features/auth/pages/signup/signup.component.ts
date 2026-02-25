@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
+import {MatRadioModule} from '@angular/material/radio';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -25,6 +25,7 @@ import { AuthService } from '../../services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    MatRadioModule,
   ],
 })
 export class SignupComponent implements OnDestroy {
@@ -41,6 +42,9 @@ export class SignupComponent implements OnDestroy {
     email: [this.mockCredentials.email, [Validators.required, Validators.email]],
     password: [this.mockCredentials.password, [Validators.required, Validators.minLength(6)]],
     confirmPassword: [this.mockCredentials.password, [Validators.required, Validators.minLength(6)]],
+
+    accountType: ['USER', [Validators.required]],
+    cnpj: [null, [Validators.required, Validators.minLength(14), Validators.maxLength(14), Validators.pattern(/^\d{14}$/)]],
   });
 
   onSubmit() {

@@ -57,9 +57,7 @@
         class="custom-input">
 
         <mat-label>Confirmar Senha</mat-label>
-      </mat-form-field>
-
-      <input 
+        <input 
         matInput 
         type="password" 
         formControlName="confirmPassword" />
@@ -70,6 +68,26 @@
 
       @if (signupForm.get('confirmPassword')?.hasError('minlength')) {
         <mat-error class="error-message">Confirmar senha deve ter pelo menos 6 caracteres</mat-error>
+      }
+      </mat-form-field>
+      
+      <mat-radio-group formControlName="accountType">
+        <mat-radio-button [value]="'USER'"> Usuário </mat-radio-button>
+        <mat-radio-button [value]="'PROVIDER'"> Fornecedor </mat-radio-button>
+      </mat-radio-group>
+      @if (signupForm.get('accountType')?.hasError('required')) {
+        <mat-error class="error-message">Tipo de conta é obrigatório</mat-error>
+      }
+      @if (signupForm.get('accountType')?.value === 'PROVIDER') {
+        <mat-form-field 
+          appearance="outline" 
+          class="custom-input">
+          <mat-label>CNPJ</mat-label>
+        <input 
+        matInput 
+        type="text" 
+        formControlName="cnpj" />
+        </mat-form-field>
       }
 
       <button 
