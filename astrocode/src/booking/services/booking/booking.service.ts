@@ -11,6 +11,7 @@ import { CreateBookingDto } from 'src/booking/dto/booking/create-booking/create-
 import { Task } from 'src/task/entities/task/task.entity';
 import { User } from 'src/user/entities/user/user.entity';
 import { CancelBookingDto } from 'src/booking/dto/booking/create-booking/create-booking.dto';
+import { Payment } from 'src/payment/entities/payment/payment.entity';
 
 @Injectable()
 export class BookingService {
@@ -42,7 +43,13 @@ export class BookingService {
         throw new NotFoundException();
       }
 
-      if (user.balance < task.price) {
+      const userBalance = Number(user.balance);
+      const taskPrice = Number(task.price);
+      if (!Number.isFinite(userBalance) || !Number.isFinite(taskPrice)) {
+        throw new BadRequestException('Invalid balance or task price');
+      }
+
+      if (bookingDto.paymentMethod === 'wallet' && userBalance < taskPrice) {
         throw new BadRequestException('Insufficient balance');
       }
 
@@ -57,8 +64,19 @@ export class BookingService {
         throw new BadRequestException('Time slot already booked');
       }
 
-      user.balance -= Number(task.price);
-      await manager.save(user);
+      if (bookingDto.paymentMethod === 'wallet') {
+        user.balance = userBalance - taskPrice;
+        await manager.save(user);
+      }
+
+      const paymentCurrency = 'BRL';
+
+      const bookingPayment = manager.create(Payment, {
+        amount: taskPrice,
+        currency: paymentCurrency,
+        user,
+      });
+      await manager.save(bookingPayment);
 
       const newBooking = manager.create(Booking, {
         scheduledDate,

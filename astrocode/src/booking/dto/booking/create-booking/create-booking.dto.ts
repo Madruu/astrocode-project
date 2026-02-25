@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 
 export class CreateBookingDto {
   @ApiProperty({ description: 'The task id' })
@@ -16,6 +22,15 @@ export class CreateBookingDto {
   @IsNotEmpty()
   @IsDateString()
   scheduledDate: string;
+
+  @ApiProperty({
+    description: 'How the booking will be paid',
+    enum: ['wallet', 'direct'],
+  })
+  @IsNotEmpty()
+  @IsString()
+  @IsIn(['wallet', 'direct'])
+  paymentMethod: 'wallet' | 'direct';
 }
 
 export class CancelBookingDto {
