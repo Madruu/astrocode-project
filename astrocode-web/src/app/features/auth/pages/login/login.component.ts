@@ -34,6 +34,7 @@ export class LoginComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   readonly mockCredentials = this.authService.getMockCredentials();
+  readonly mockProviderCredentials = this.authService.getMockProviderCredentials();
   loading = signal(false);
   errorMessage = signal<string | null>(null);
 
@@ -52,7 +53,8 @@ export class LoginComponent implements OnDestroy {
       .login(this.loginForm.getRawValue() as any)
       .pipe(finalize(() => this.loading.set(false)), takeUntil(this.destroy$))
       .subscribe({
-        next: () => this.router.navigate(['/dashboard']),
+        next: (user) =>
+          this.router.navigate([user.accountType === 'PROVIDER' ? '/provider-dashboard' : '/dashboard']),
         error: () => this.errorMessage.set('Email ou senha inválidos'),
       });
   }

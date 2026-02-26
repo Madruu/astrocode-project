@@ -3,6 +3,12 @@ import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./features/landing/pages/landing/landing.component').then((m) => m.LandingComponent),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component').then(m => m.LoginComponent),
@@ -17,6 +23,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/dashboard/pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+  },
+  {
+    path: 'provider-dashboard',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/dashboard/pages/provider-dashboard/provider-dashboard.component').then(
+        (m) => m.ProviderDashboardComponent
+      ),
   },
   {
     path: 'services',
@@ -42,6 +56,5 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/account/pages/account/account.component').then((m) => m.AccountComponent),
   },
-  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', redirectTo: '' },
 ];

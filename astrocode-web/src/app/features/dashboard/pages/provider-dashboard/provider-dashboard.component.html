@@ -1,0 +1,145 @@
+<div class="dashboard-page">
+  <header class="topbar">
+    <div class="brand">
+      <mat-icon>event</mat-icon>
+      <span>AgendaFacil</span>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link active" routerLink="/provider-dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link" routerLink="/services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>calendar_month</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link" routerLink="/calendar">
+        <mat-icon>calendar_today</mat-icon>
+        Calendario
+      </a>
+    </nav>
+
+    <div class="user-area">
+      <div class="user-meta">
+        <strong>Prestador</strong>
+        <span>{{ (user$ | async)?.email || 'prestador@exemplo.com' }}</span>
+      </div>
+      <button class="logout-button" mat-stroked-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
+      </button>
+    </div>
+  </header>
+
+  @if (loading$ | async) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  <main class="main-content">
+    @if (dashboardStats$ | async; as stats) {
+      <section class="hero">
+        <h1>Ola, Prestador!</h1>
+        <p>Painel do Prestador de Servicos</p>
+      </section>
+
+      <section class="summary-grid">
+        <mat-card class="summary-card green">
+          <div class="summary-header">
+            <span>Agendamentos Totais</span>
+            <mat-icon>assignment</mat-icon>
+          </div>
+          <strong>{{ stats.totalBookings }}</strong>
+          <small>agendamentos confirmados</small>
+        </mat-card>
+
+        <mat-card class="summary-card blue">
+          <div class="summary-header">
+            <span>Servicos Ativos</span>
+            <mat-icon>work_outline</mat-icon>
+          </div>
+          <strong>{{ stats.activeServices }}</strong>
+          <small>{{ stats.activeServices }} total</small>
+        </mat-card>
+
+        <mat-card class="summary-card cyan">
+          <div class="summary-header">
+            <span>Receita Total</span>
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <strong>{{ stats.totalRevenue | currency: 'BRL' }}</strong>
+          <small>pagamentos recebidos</small>
+        </mat-card>
+
+        <mat-card class="summary-card green">
+          <div class="summary-header">
+            <span>Receita Pendente</span>
+            <mat-icon>history</mat-icon>
+          </div>
+          <strong>{{ stats.pendingRevenue | currency: 'BRL' }}</strong>
+          <small>aguardando pagamento</small>
+        </mat-card>
+      </section>
+
+      <section class="panels-grid">
+        <mat-card class="panel-card">
+          <div class="panel-header">
+            <h2>Acoes Administrativas</h2>
+            <p>Gerencie a plataforma</p>
+          </div>
+
+          <div class="actions-list">
+            <button mat-stroked-button routerLink="/services">
+              <mat-icon>work_outline</mat-icon>
+              Gerenciar Servicos
+            </button>
+            <button mat-stroked-button type="button">
+              <mat-icon>payments</mat-icon>
+              Visualizar Pagamentos
+            </button>
+            <button mat-stroked-button routerLink="/schedule">
+              <mat-icon>event_note</mat-icon>
+              Ver Todos os Agendamentos
+            </button>
+          </div>
+        </mat-card>
+
+        <mat-card class="panel-card">
+          <div class="panel-header">
+            <h2>Estatisticas da Plataforma</h2>
+            <p>Visao geral do sistema</p>
+          </div>
+
+          <div class="stat-highlight green-soft">
+            <div>
+              <span>Total de Agendamentos</span>
+              <strong>{{ stats.totalBookings }}</strong>
+            </div>
+            <mat-icon>event_available</mat-icon>
+          </div>
+
+          <div class="stat-highlight blue-soft">
+            <div>
+              <span>Receita Media por Servico</span>
+              <strong>{{ stats.averageRevenue | currency: 'BRL' }}</strong>
+            </div>
+            <mat-icon>savings</mat-icon>
+          </div>
+
+          <div class="status-row">
+            <span>Taxa de Pagamento</span>
+            <strong>{{ stats.paymentRate }}%</strong>
+          </div>
+        </mat-card>
+      </section>
+    }
+  </main>
+
+  <footer class="footer">
+    <span>(c) 2026 AgendaFacil. Plataforma de agendamento de servicos.</span>
+  </footer>
+</div>

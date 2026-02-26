@@ -26,8 +26,8 @@
 
     <div class="user-area">
       <div class="user-meta">
-        <strong>{{ (user$ | async)?.name || 'Administrador' }}</strong>
-        <span>{{ (user$ | async)?.email || 'admin@exemplo.com' }}</span>
+        <strong>{{ (user$ | async)?.name || 'Usuario' }}</strong>
+        <span>{{ (user$ | async)?.email || 'usuario@exemplo.com' }}</span>
       </div>
       <button class="logout-button" mat-stroked-button (click)="logout()">
         <mat-icon>logout</mat-icon>
@@ -42,7 +42,7 @@
 
   <main class="main-content">
     <section class="hero">
-      <h1>Ola, {{ (user$ | async)?.name || 'Administrador' }}!</h1>
+      <h1>Ola, {{ (user$ | async)?.name || 'Usuario' }}!</h1>
       <p>Bem-vindo ao seu painel de controle</p>
     </section>
 
@@ -122,7 +122,7 @@
             <mat-icon>work_outline</mat-icon>
             Navegar Servicos Disponiveis
           </button>
-          <button mat-stroked-button type="button">
+          <button mat-stroked-button routerLink="/calendar">
             <mat-icon>calendar_today</mat-icon>
             Ver Calendario Completo
           </button>

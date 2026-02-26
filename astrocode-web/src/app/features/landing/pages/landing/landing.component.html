@@ -1,0 +1,94 @@
+<div class="landing-page">
+  <header class="topbar">
+    <div class="brand">
+      <mat-icon>event</mat-icon>
+      <span>AgendaFacil</span>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link" routerLink="/dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link" routerLink="/services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>calendar_month</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link" routerLink="/calendar">
+        <mat-icon>calendar_today</mat-icon>
+        Calendario
+      </a>
+    </nav>
+
+    <div class="user-area">
+      <div class="user-meta">
+        <strong>{{ (user$ | async)?.name || 'Administrador' }}</strong>
+        <span>{{ (user$ | async)?.email || 'admin@exemplo.com' }}</span>
+      </div>
+      <button class="logout-button" mat-stroked-button type="button" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Agende seus servicos com facilidade</h1>
+      <p>
+        Plataforma completa para gerenciar agendamentos, servicos e pagamentos de forma simples e eficiente.
+      </p>
+      <div class="hero-actions">
+        <a mat-flat-button class="primary" routerLink="/signup">Comecar Agora</a>
+        <a mat-stroked-button class="secondary" routerLink="/login">Fazer Login</a>
+      </div>
+    </section>
+
+    <section class="features">
+      <h2>Funcionalidades Principais</h2>
+      <p class="subtitle">Tudo que voce precisa para gerenciar seus agendamentos em um so lugar</p>
+
+      <div class="features-grid">
+        <article class="feature-card green">
+          <div class="icon-circle">
+            <mat-icon>event_available</mat-icon>
+          </div>
+          <h3>Agendamento Facil</h3>
+          <p>Agende seus servicos de forma rapida e intuitiva com nosso sistema de calendario interativo.</p>
+        </article>
+
+        <article class="feature-card blue">
+          <div class="icon-circle">
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <h3>Gestao de Tempo</h3>
+          <p>Visualize todos os seus agendamentos em um so lugar e gerencie seu tempo de forma eficiente.</p>
+        </article>
+
+        <article class="feature-card cyan">
+          <div class="icon-circle">
+            <mat-icon>credit_card</mat-icon>
+          </div>
+          <h3>Pagamento Seguro</h3>
+          <p>Processe pagamentos de forma segura e acompanhe o status de todas as suas transacoes.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta-wrapper">
+      <div class="cta-card">
+        <h2>Pronto para comecar?</h2>
+        <p>Crie sua conta gratuitamente e comece a agendar seus servicos hoje mesmo</p>
+        <a mat-flat-button class="cta-button" routerLink="/signup">Criar Conta Gratis</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>(c) 2026 AgendaFacil. Plataforma de agendamento de servicos.</span>
+  </footer>
+</div>
