@@ -1,0 +1,142 @@
+<div class="payments-layout">
+  <header class="topbar">
+    <div class="brand">
+      <mat-icon>event</mat-icon>
+      <span>AgendaFacil</span>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link" routerLink="/provider-dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link" routerLink="/provider-services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>calendar_month</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link" routerLink="/calendar">
+        <mat-icon>calendar_today</mat-icon>
+        Calendario
+      </a>
+      <a class="nav-link active" routerLink="/provider-payments">
+        <mat-icon>payments</mat-icon>
+        Pagamentos
+      </a>
+    </nav>
+
+    <div class="user-area">
+      <div class="user-meta">
+        <strong>Prestador</strong>
+        <span>{{ (user$ | async)?.email || 'prestador@exemplo.com' }}</span>
+      </div>
+      <button class="logout-button" mat-stroked-button type="button" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
+      </button>
+    </div>
+  </header>
+
+  <main class="payments-page">
+    <section class="header">
+      <h1>Gestao de Pagamentos</h1>
+      <p>Visualize e acompanhe todos os pagamentos da plataforma</p>
+    </section>
+
+    @if (summary$ | async; as summary) {
+      <section class="summary-grid">
+        <mat-card class="summary-card green">
+          <div class="summary-header">
+            <span>Receita Total</span>
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <strong>{{ summary.totalRevenue | currency: 'BRL' }}</strong>
+          <small>{{ summary.paidCount }} pagamento(s) recebidos</small>
+        </mat-card>
+
+        <mat-card class="summary-card blue">
+          <div class="summary-header">
+            <span>Receita Pendente</span>
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <strong>{{ summary.pendingRevenue | currency: 'BRL' }}</strong>
+          <small>aguardando pagamento</small>
+        </mat-card>
+
+        <mat-card class="summary-card cyan">
+          <div class="summary-header">
+            <span>Taxa de Conversao</span>
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <strong>{{ summary.conversionRate }}%</strong>
+          <small>{{ summary.totalCount }} agendamento(s) totais</small>
+        </mat-card>
+      </section>
+    }
+
+    <mat-card class="search-card">
+      <mat-form-field appearance="outline">
+        <mat-icon matPrefix>search</mat-icon>
+        <mat-label>Buscar por servico, nome do cliente...</mat-label>
+        <input
+          matInput
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Digite para filtrar os pagamentos"
+        />
+      </mat-form-field>
+    </mat-card>
+
+    <mat-card class="payments-list-card">
+      @if (filteredPayments$ | async; as payments) {
+        <header class="list-header">
+          <h2>Todos os Pagamentos</h2>
+          <p>{{ payments.length }} agendamento(s) encontrado(s)</p>
+        </header>
+
+        @if (payments.length === 0) {
+          <div class="empty-state">
+            <mat-icon>payments</mat-icon>
+            <p>Nenhum pagamento encontrado</p>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Servico</th>
+                  <th>Data</th>
+                  <th>Status</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (payment of payments; track payment.id) {
+                  <tr>
+                    <td>{{ payment.clientName }}</td>
+                    <td>{{ payment.serviceName }}</td>
+                    <td>{{ payment.startAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>
+                      <span class="status-chip" [class.paid]="payment.paymentStatus === 'paid'">
+                        {{ payment.paymentStatus === 'paid' ? 'Pago' : 'Pendente' }}
+                      </span>
+                    </td>
+                    <td>{{ payment.amount | currency: 'BRL' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </mat-card>
+  </main>
+
+  <footer class="payments-footer">
+    <p>© 2026 AgendaFacil. Plataforma de agendamento de servicos.</p>
+  </footer>
+</div>

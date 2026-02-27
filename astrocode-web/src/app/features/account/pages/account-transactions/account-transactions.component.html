@@ -1,0 +1,138 @@
+<div class="transactions-layout">
+  <header class="topbar">
+    <div class="brand">
+      <mat-icon>event_available</mat-icon>
+      <span>AgendaFacil</span>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link" routerLink="/dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link" routerLink="/services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>checklist</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link active" routerLink="/account">
+        <mat-icon>person_outline</mat-icon>
+        Conta
+      </a>
+    </nav>
+
+    <button class="logout-button" mat-stroked-button (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Sair
+    </button>
+  </header>
+
+  <main class="main-content">
+    <section class="page-header">
+      <div>
+        <h1>Historico de transacoes</h1>
+        <p>Acompanhe pagamentos e estornos da sua carteira</p>
+      </div>
+      <button class="back-button" mat-stroked-button routerLink="/account">
+        <mat-icon>arrow_back</mat-icon>
+        Voltar para Conta
+      </button>
+    </section>
+
+    @if (summary$ | async; as summary) {
+      <section class="summary-grid">
+        <mat-card class="summary-card">
+          <span>Total depositado</span>
+          <strong>{{ summary.depositTotal | currency: 'BRL' }}</strong>
+        </mat-card>
+        <mat-card class="summary-card">
+          <span>Total pago em agendamentos</span>
+          <strong>{{ summary.paymentTotal | currency: 'BRL' }}</strong>
+        </mat-card>
+        <mat-card class="summary-card">
+          <span>Total estornado</span>
+          <strong>{{ summary.refundTotal | currency: 'BRL' }}</strong>
+        </mat-card>
+        <mat-card class="summary-card">
+          <span>Transacoes pendentes</span>
+          <strong>{{ summary.pendingCount }}</strong>
+        </mat-card>
+      </section>
+    }
+
+    <mat-card class="search-card">
+      <mat-form-field appearance="outline">
+        <mat-icon matPrefix>search</mat-icon>
+        <mat-label>Buscar por descricao, referencia ou agendamento</mat-label>
+        <input
+          matInput
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Digite para filtrar"
+        />
+      </mat-form-field>
+    </mat-card>
+
+    <mat-card class="history-card">
+      @if (filteredTransactions$ | async; as transactions) {
+        <div class="history-header">
+          <h2>Historico de transacoes</h2>
+          <p>{{ transactions.length }} transacao(oes) encontrada(s)</p>
+        </div>
+
+        @if (transactions.length === 0) {
+          <div class="empty-state">
+            <mat-icon>receipt_long</mat-icon>
+            <p>Nenhuma transacao encontrada.</p>
+          </div>
+        } @else {
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descricao</th>
+                  <th>Tipo</th>
+                  <th>Status</th>
+                  <th>Referencia</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (transaction of transactions; track transaction.id) {
+                  <tr>
+                    <td>{{ transaction.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ transaction.description }}</td>
+                    <td>
+                      <span class="chip" [class.refund]="transaction.type === 'refund'" [class.deposit]="transaction.type === 'deposit'">
+                        {{
+                          transaction.type === 'payment'
+                            ? 'Pagamento'
+                            : transaction.type === 'refund'
+                              ? 'Estorno'
+                              : 'Deposito'
+                        }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="status" [class.pending]="transaction.status === 'pending'">
+                        {{ transaction.status === 'completed' ? 'Concluida' : 'Pendente' }}
+                      </span>
+                    </td>
+                    <td>{{ transaction.reference }}</td>
+                    <td [class.negative]="transaction.type === 'payment'" [class.positive]="transaction.type !== 'payment'">
+                      {{ transaction.type === 'payment' ? '-' : '+' }}{{ transaction.amount | currency: 'BRL' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </mat-card>
+  </main>
+</div>

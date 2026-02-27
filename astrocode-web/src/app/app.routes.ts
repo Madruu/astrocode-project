@@ -47,6 +47,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'provider-payments',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/payments/pages/provider-payments/provider-payments.component').then(
+        (m) => m.ProviderPaymentsComponent
+      ),
+  },
+  {
     path: 'schedule',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -63,6 +71,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/account/pages/account/account.component').then((m) => m.AccountComponent),
+  },
+  {
+    path: 'account-transactions',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/pages/account-transactions/account-transactions.component').then(
+        (m) => m.AccountTransactionsComponent
+      ),
   },
   { path: '**', redirectTo: '' },
 ];

@@ -1,0 +1,267 @@
+.transactions-layout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(56, 163, 165, 0.12) 0%, rgba(87, 204, 153, 0.16) 100%);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #0b132b;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.brand mat-icon {
+  color: #57cc99;
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.nav-link:hover {
+  background: rgba(87, 204, 153, 0.2);
+}
+
+.nav-link.active {
+  background: #22577a;
+}
+
+.logout-button {
+  border-color: #22577a;
+  color: #ffffff !important;
+  background: #22577a;
+}
+
+.main-content {
+  padding: 1.3rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #0b132b;
+  font-size: 2rem;
+}
+
+.page-header p {
+  margin: 0.3rem 0 0;
+  color: #475569;
+}
+
+.back-button {
+  border-color: #cbd5e1;
+  color: #0b132b !important;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 0.9rem;
+}
+
+.summary-card {
+  border-radius: 12px;
+  border: 1px solid #dbe6ef;
+  box-shadow: none;
+  background: #ffffff;
+  padding: 0.9rem 1rem;
+}
+
+.summary-card span {
+  color: #475569;
+  font-size: 0.88rem;
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 0.4rem;
+  color: #0b132b;
+  font-size: 1.35rem;
+}
+
+.search-card,
+.history-card {
+  border-radius: 14px;
+  border: 1px solid #dbe6ef;
+  box-shadow: none;
+  background: #ffffff;
+}
+
+.search-card {
+  padding: 0.7rem 1rem 0.1rem;
+}
+
+.search-card mat-form-field {
+  width: 100%;
+}
+
+.history-card {
+  padding: 1rem;
+}
+
+.history-header h2 {
+  margin: 0;
+  color: #0b132b;
+}
+
+.history-header p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+}
+
+.table-wrapper {
+  margin-top: 0.8rem;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.72rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+th {
+  color: #0b132b;
+  font-size: 0.87rem;
+}
+
+td {
+  color: #334155;
+  font-size: 0.92rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #e0f2fe;
+  color: #0c4a6e;
+}
+
+.chip.refund {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.chip.deposit {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.negative {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.positive {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.empty-state {
+  min-height: 180px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.65rem;
+  color: #94a3b8;
+}
+
+.empty-state mat-icon {
+  font-size: 2.4rem;
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .topbar {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+  }
+
+  .top-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 680px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,152 @@
+:host {
+  display: block;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(90deg, #38a3a5, #22577a);
+  color: #ffffff;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.title-wrap h2 {
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.header-icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.close-btn {
+  color: #ffffff;
+}
+
+mat-dialog-content {
+  padding: 1rem 1.1rem 0.7rem !important;
+}
+
+.dialog-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.section label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+.section mat-form-field {
+  width: 100%;
+}
+
+.section small {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.methods-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+}
+
+.method-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  min-height: 4.6rem;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 500;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.2rem;
+}
+
+.method-btn.active {
+  border-color: #38a3a5;
+  background: rgba(56, 163, 165, 0.12);
+  color: #0f766e;
+}
+
+.card-data {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 0.85rem;
+}
+
+.card-data h3 {
+  margin: 0 0 0.55rem;
+  color: #1e293b;
+  font-size: 1.2rem;
+}
+
+.card-data mat-form-field {
+  width: 100%;
+}
+
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.dialog-actions {
+  padding: 0.8rem 1.1rem 1rem !important;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.dialog-actions button {
+  flex: 1;
+  border-radius: 8px;
+}
+
+.cancel-btn {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #1e293b !important;
+}
+
+.confirm-btn {
+  color: #ffffff !important;
+  background: linear-gradient(90deg, #38a3a5, #22577a) !important;
+}
+
+.confirm-btn mat-icon {
+  margin-right: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .methods-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+  }
+}

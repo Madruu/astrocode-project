@@ -1,7 +1,7 @@
 <div class="account-layout">
   <header class="topbar">
     <div class="brand">
-      <mat-icon>event_available</mat-icon>
+      <mat-icon>event</mat-icon>
       <span>AgendaFacil</span>
     </div>
 
@@ -24,46 +24,158 @@
       </a>
     </nav>
 
-    <button class="logout-button" mat-stroked-button (click)="logout()">
-      <mat-icon>logout</mat-icon>
-      Sair
-    </button>
+    <div class="user-area">
+      <div class="user-meta">
+        <strong>{{ (user$ | async)?.name || 'Maria Silva' }}</strong>
+        <span>{{ (user$ | async)?.email || 'maria@exemplo.com' }}</span>
+      </div>
+      <button class="logout-button" mat-stroked-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
+      </button>
+    </div>
   </header>
 
   <main class="main-content">
+    <section class="page-title">
+      <h1>Minha Conta</h1>
+    </section>
+
     <section class="cards-grid">
-      <mat-card class="account-card">
-        <h2>Dados da conta</h2>
-        @if (user$ | async; as user) {
-          <dl>
-            <div class="row">
-              <dt>Nome</dt>
-              <dd>{{ user.name }}</dd>
+      <div class="left-column">
+        <mat-card class="panel-card">
+          <header class="card-header">
+            <div class="icon-badge blue">
+              <mat-icon>person_outline</mat-icon>
             </div>
-            <div class="row">
-              <dt>Email</dt>
-              <dd>{{ user.email }}</dd>
+            <div>
+              <h2>Dados Pessoais</h2>
+              <p>Atualize suas informacoes</p>
             </div>
-            <div class="row">
-              <dt>ID</dt>
-              <dd>{{ user.id }}</dd>
-            </div>
-          </dl>
-        } @else {
-          <p>Nenhuma conta carregada no momento.</p>
-        }
+          </header>
 
-        <div class="actions">
-          <button class="back-button" mat-stroked-button routerLink="/dashboard">Voltar ao dashboard</button>
-        </div>
-      </mat-card>
+          @if (user$ | async; as user) {
+            <form class="form-grid" (ngSubmit)="saveAccountChanges()">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome completo</mat-label>
+                <input matInput [value]="user.name" />
+              </mat-form-field>
 
-      <mat-card class="wallet-card">
-        <h2>Carteira</h2>
-        <p>Saldo: R$ 0,00</p>
-        <button class="wallet-button" mat-stroked-button>Depositar</button>
-        <button class="wallet-button" mat-stroked-button>Historico de transacoes</button>
-      </mat-card>
+              <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput [value]="user.email" />
+                <mat-hint>O email nao pode ser alterado</mat-hint>
+              </mat-form-field>
+
+              <button class="gradient-btn" mat-flat-button type="submit">Salvar Alteracoes</button>
+            </form>
+          } @else {
+            <p>Nenhuma conta carregada no momento.</p>
+          }
+        </mat-card>
+
+        <mat-card class="panel-card">
+          <header class="card-header">
+            <div class="icon-badge green">
+              <mat-icon>lock_outline</mat-icon>
+            </div>
+            <div>
+              <h2>Alterar Senha</h2>
+              <p>Mantenha sua conta segura</p>
+            </div>
+          </header>
+
+          <form class="form-grid" (ngSubmit)="changePassword()">
+            <mat-form-field appearance="outline">
+              <mat-label>Senha atual</mat-label>
+              <input matInput type="password" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Nova senha</mat-label>
+              <input matInput type="password" />
+              <mat-hint>Minimo de 6 caracteres</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Confirmar nova senha</mat-label>
+              <input matInput type="password" />
+            </mat-form-field>
+
+            <button class="solid-btn" mat-flat-button type="submit">Alterar Senha</button>
+          </form>
+        </mat-card>
+      </div>
+
+      <div class="right-column">
+        <mat-card class="panel-card wallet-panel">
+          <div class="wallet-top">
+            <header class="card-header compact">
+              <div class="icon-badge cyan">
+                <mat-icon>account_balance_wallet</mat-icon>
+              </div>
+              <div>
+                <h2>Carteira</h2>
+                <p>Saldo disponivel</p>
+              </div>
+            </header>
+            <strong>{{ getWalletBalance((walletSummary$ | async) ?? null) | currency: 'BRL' }}</strong>
+          </div>
+
+          <button class="wallet-add-btn" mat-flat-button type="button" (click)="depositToWallet()">
+            <mat-icon>add</mat-icon>
+            Adicionar Saldo
+          </button>
+        </mat-card>
+
+        <mat-card class="panel-card">
+          <header class="card-header">
+            <div class="icon-badge purple">
+              <mat-icon>history</mat-icon>
+            </div>
+            <div>
+              <h2>Historico de Transacoes</h2>
+              <p>Ultimas movimentacoes da carteira</p>
+            </div>
+          </header>
+
+          <div class="transactions-list">
+            @if (recentTransactions$ | async; as transactions) {
+              @if (transactions.length === 0) {
+                <p class="empty-history">Nenhuma movimentacao recente.</p>
+              } @else {
+                @for (transaction of transactions; track transaction.id) {
+                  <article class="transaction-item">
+                    <div class="transaction-icon">
+                      <mat-icon>check_circle</mat-icon>
+                    </div>
+                    <div class="transaction-content">
+                      <strong>{{ getTransactionDescription(transaction) }}</strong>
+                      <span>{{ transaction.reference || 'PIX' }} - {{ transaction.createdAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+                    </div>
+                    <div class="transaction-meta">
+                      <strong [class]="getTransactionAmountClass(transaction.type)">
+                        {{ getTransactionAmountPrefix(transaction.type) }} {{ transaction.amount | currency: 'BRL' }}
+                      </strong>
+                      <span class="status-chip" [class.pending]="transaction.status === 'PENDING'">
+                        {{ transaction.status === 'COMPLETED' ? 'Concluido' : 'Pendente' }}
+                      </span>
+                    </div>
+                  </article>
+                }
+              }
+            }
+          </div>
+
+          <button class="history-btn" mat-stroked-button routerLink="/account-transactions">
+            Ver historico completo
+          </button>
+        </mat-card>
+      </div>
     </section>
   </main>
+
+  <footer class="footer">
+    <span>© 2026 AgendaFacil. Plataforma de agendamento de servicos.</span>
+  </footer>
 </div>

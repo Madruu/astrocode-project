@@ -12,6 +12,15 @@ import { Booking } from 'src/booking/entities/booking/booking.entity';
 import { Task } from 'src/task/entities/task/task.entity';
 import { PurchaseTaskDto } from 'src/task/dto/create-task.dto/create-task.dto';
 
+export interface WalletSummary {
+  balance: number;
+  currency: string;
+  totalDeposits: number;
+  totalCharges: number;
+  totalRefunds: number;
+  pendingTransactions: number;
+}
+
 @Injectable()
 export class PaymentService {
   constructor(
@@ -22,11 +31,16 @@ export class PaymentService {
     private userRepository: Repository<User>,
   ) {}
 
-  async createPayment(createPaymentDto: CreatePaymentDto): Promise<Payment> {
+  async createPayment(
+    userId: number,
+    createPaymentDto: CreatePaymentDto,
+  ): Promise<Payment> {
     return this.dataSource.transaction(async (manager) => {
-      const payment = manager.create(Payment, createPaymentDto);
+      if (!Number.isInteger(userId)) {
+        throw new BadRequestException('User id is required');
+      }
       const user = await manager.findOne(User, {
-        where: { id: createPaymentDto.userId },
+        where: { id: userId },
       });
       if (!user) {
         throw new NotFoundException('User not found');
@@ -34,6 +48,9 @@ export class PaymentService {
       const paymentAmount = Number(createPaymentDto.amount);
       if (!Number.isFinite(paymentAmount)) {
         throw new BadRequestException('Invalid payment amount');
+      }
+      if (paymentAmount <= 0) {
+        throw new BadRequestException('Payment amount must be greater than 0');
       }
 
       const currentBalance = Number(user.balance);
@@ -45,23 +62,73 @@ export class PaymentService {
         throw new BadRequestException('User balance cannot exceed 1000000');
       }
       user.balance = newBalance;
-      payment.user = user;
       await manager.save(user);
+
+      const payment = manager.create(Payment, {
+        amount: paymentAmount,
+        currency: createPaymentDto.currency,
+        type: 'DEPOSIT',
+        status: 'COMPLETED',
+        description: createPaymentDto.description ?? 'Deposito na carteira',
+        reference: createPaymentDto.reference ?? null,
+        user,
+      });
       const savedPayment = await manager.save(payment);
       return savedPayment;
     });
   }
 
   async getPaymentsByUserId(userId: number): Promise<Payment[]> {
-    const payments = await this.paymentRepository.find({
+    return this.paymentRepository.find({
       where: { user: { id: userId } },
       relations: ['user'],
+      order: { createdAt: 'DESC' },
     });
-    if (payments.length === 0) {
-      throw new NotFoundException('Payments not found');
+  }
+
+  async getWalletSummaryByUserId(userId: number): Promise<WalletSummary> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['payments'],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-    console.log(userId);
-    return payments;
+
+    const payments = user.payments ?? [];
+    const totalDeposits = payments
+      .filter(
+        (payment) =>
+          payment.type === 'DEPOSIT' && payment.status === 'COMPLETED',
+      )
+      .reduce((total, payment) => total + Number(payment.amount), 0);
+
+    const totalCharges = payments
+      .filter(
+        (payment) =>
+          payment.type === 'BOOKING_CHARGE' && payment.status === 'COMPLETED',
+      )
+      .reduce((total, payment) => total + Number(payment.amount), 0);
+
+    const totalRefunds = payments
+      .filter(
+        (payment) =>
+          payment.type === 'BOOKING_REFUND' && payment.status === 'COMPLETED',
+      )
+      .reduce((total, payment) => total + Number(payment.amount), 0);
+
+    const pendingTransactions = payments.filter(
+      (payment) => payment.status === 'PENDING',
+    ).length;
+
+    return {
+      balance: Number(user.balance ?? 0),
+      currency: 'BRL',
+      totalDeposits,
+      totalCharges,
+      totalRefunds,
+      pendingTransactions,
+    };
   }
 
   async purchaseTask(purchaseTaskDto: PurchaseTaskDto): Promise<Booking> {
@@ -78,11 +145,26 @@ export class PaymentService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      if (user.balance < task.price) {
+      const currentBalance = Number(user.balance);
+      const taskPrice = Number(task.price);
+      if (!Number.isFinite(currentBalance) || !Number.isFinite(taskPrice)) {
+        throw new BadRequestException('Invalid balance or task price');
+      }
+      if (currentBalance < taskPrice) {
         throw new BadRequestException('Insufficient balance');
       }
-      user.balance -= task.price;
+      user.balance = currentBalance - taskPrice;
       await manager.save(user);
+      const taskPayment = manager.create(Payment, {
+        amount: taskPrice,
+        currency: 'BRL',
+        type: 'BOOKING_CHARGE',
+        status: 'COMPLETED',
+        reference: `BOOKING-${task.id}-${Date.now()}`,
+        description: `Pagamento do agendamento para ${task.title}`,
+        user,
+      });
+      await manager.save(taskPayment);
       const booking = manager.create(Booking, {
         task,
         user,

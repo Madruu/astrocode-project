@@ -4,6 +4,12 @@ import { OneToMany } from 'typeorm';
 import { Booking } from 'src/booking/entities/booking/booking.entity';
 import { Payment } from 'src/payment/entities/payment/payment.entity';
 import { Task } from 'src/task/entities/task/task.entity';
+
+const numericTransformer = {
+  to: (value: number) => value,
+  from: (value: string | number | null): number => Number(value ?? 0),
+};
+
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('identity', { type: 'int' })
@@ -19,7 +25,7 @@ export class User {
   @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', default: 0, transformer: numericTransformer })
   balance: number = 0;
 
   @Column({ type: 'varchar', default: 'USER' })

@@ -3,9 +3,24 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { map, Observable } from 'rxjs';
+import { take } from 'rxjs';
 
 import { AuthService } from '../../../auth/services/auth.service';
+import {
+  WalletApiService,
+  WalletSummary,
+  WalletTransaction,
+} from '../../../../core/services/wallet-api.service';
+import {
+  AddBalanceDialogComponent,
+  AddBalanceDialogResult,
+} from '../../components/add-balance-dialog/add-balance-dialog.component';
 
 @Component({
   selector: 'app-account',
@@ -16,15 +31,95 @@ import { AuthService } from '../../../auth/services/auth.service';
     CommonModule,
     MatButtonModule,
     MatCardModule,
+    MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
+    MatSnackBarModule,
     RouterLink,
   ],
 })
 export class AccountComponent {
   private authService = inject(AuthService);
+  private walletApiService = inject(WalletApiService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
   private router = inject(Router);
 
   readonly user$ = this.authService.currentUser$;
+  readonly walletSummary$: Observable<WalletSummary> = this.walletApiService.getWalletSummary$();
+  readonly recentTransactions$: Observable<WalletTransaction[]> = this.walletApiService
+    .getTransactions$()
+    .pipe(map((transactions) => transactions.slice(0, 3)));
+
+  getWalletBalance(summary: WalletSummary | null): number {
+    return Number(summary?.balance ?? 0);
+  }
+
+  getTransactionAmountClass(type: WalletTransaction['type']): string {
+    return type === 'BOOKING_CHARGE' ? 'amount-out' : 'amount-in';
+  }
+
+  getTransactionAmountPrefix(type: WalletTransaction['type']): string {
+    return type === 'BOOKING_CHARGE' ? '-' : '+';
+  }
+
+  getTransactionDescription(transaction: WalletTransaction): string {
+    if (transaction.description) {
+      return transaction.description;
+    }
+    if (transaction.type === 'DEPOSIT') {
+      return 'Adicao de saldo a carteira';
+    }
+    if (transaction.type === 'BOOKING_REFUND') {
+      return 'Estorno de agendamento';
+    }
+    return 'Pagamento de agendamento';
+  }
+
+  saveAccountChanges(): void {
+    this.snackBar.open('Perfil atualizado com sucesso.', 'Fechar', { duration: 2600 });
+  }
+
+  changePassword(): void {
+    this.snackBar.open('Alteracao de senha ainda sera integrada ao backend.', 'Fechar', {
+      duration: 3200,
+    });
+  }
+
+  depositToWallet(): void {
+    const dialogRef = this.dialog.open<
+      AddBalanceDialogComponent,
+      undefined,
+      AddBalanceDialogResult | undefined
+    >(AddBalanceDialogComponent, {
+      width: '500px',
+      maxWidth: '95vw',
+      autoFocus: false,
+    });
+
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((result) => {
+        if (!result) {
+          return;
+        }
+
+        this.walletApiService
+          .deposit$(result.amount)
+          .pipe(take(1))
+          .subscribe({
+            next: () => {
+              this.walletApiService.refresh();
+              this.snackBar.open('Deposito realizado com sucesso.', 'Fechar', { duration: 2600 });
+            },
+            error: (error: unknown) => {
+              const message = error instanceof Error ? error.message : 'Erro ao realizar deposito.';
+              this.snackBar.open(message, 'Fechar', { duration: 3200 });
+            },
+          });
+      });
+  }
 
   logout(): void {
     this.authService.logout();

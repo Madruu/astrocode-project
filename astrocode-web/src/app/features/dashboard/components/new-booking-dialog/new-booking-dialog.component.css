@@ -6,9 +6,58 @@
   padding-top: 0.5rem;
 }
 
+.full-row {
+  grid-column: 1 / -1;
+}
+
+.payment-method-section {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.payment-method-section label {
+  color: #334155;
+  font-weight: 500;
+}
+
+.payment-method-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.payment-method-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  min-height: 3.7rem;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.payment-method-btn.active {
+  border-color: #38a3a5;
+  background: rgba(56, 163, 165, 0.12);
+  color: #22577a;
+}
+
+.payment-method-hint {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
 @media (max-width: 820px) {
   .form-grid {
     grid-template-columns: 1fr;
     min-width: min(96vw, 420px);
+  }
+
+  .payment-method-grid {
+    grid-template-columns: 1fr;
   }
 }

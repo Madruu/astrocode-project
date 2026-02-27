@@ -5,13 +5,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, map, of, startWith, switchMap } from 'rxjs';
 
 import { Booking } from '../../../../core/services/booking.service';
-import { BookingApiService } from '../../../../core/services/booking-api.service';
+import { ApiBooking, BookingApiService } from '../../../../core/services/booking-api.service';
 import { ProviderTask, ProviderTaskApiService } from '../../../../core/services/provider-task-api.service';
 import { ScheduleService } from '../../../../core/services/schedule.service';
 
@@ -27,6 +28,8 @@ interface SlotOption {
   label: string;
 }
 
+type BookingPaymentMethod = 'wallet' | 'direct';
+
 @Component({
   selector: 'app-new-booking-dialog',
   standalone: true,
@@ -38,6 +41,7 @@ interface SlotOption {
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatSelectModule,
     MatSnackBarModule,
@@ -56,6 +60,7 @@ export class NewBookingDialogComponent {
     serviceId: ['', Validators.required],
     date: ['', Validators.required],
     slot: ['', Validators.required],
+    paymentMethod: ['wallet' as BookingPaymentMethod, Validators.required],
   });
 
   readonly serviceOptions$ = this.providerTaskApiService.getProviderTasks$().pipe(catchError(() => of([])));
@@ -67,24 +72,20 @@ export class NewBookingDialogComponent {
         return of([] as SlotOption[]);
       }
 
+      const fallbackBookedSlots = this.getBookedSlotsFromUi(date, this.data.bookings);
+
       return this.bookingApiService.getBookings$().pipe(
-        catchError(() => of([])),
-        map((bookings) =>
-          bookings
-            .filter((booking) => booking.status !== 'cancelled')
-            .filter((booking) => this.isSameDay(new Date(booking.scheduledDate), date))
-            .map((booking) => booking.scheduledDate)
+        map((bookings) => this.getBookedSlotsFromApi(date, bookings)),
+        map((bookedSlots) => (bookedSlots.length > 0 ? bookedSlots : fallbackBookedSlots)),
+        catchError(() => of(fallbackBookedSlots)),
+        switchMap((bookedSlots) => this.scheduleService.getAvailableSlots$(date, bookedSlots)),
+        map((slots) =>
+          slots.map((slotIso) => ({
+            iso: slotIso,
+            label: this.datePipe.transform(slotIso, 'HH:mm') ?? '',
+          }))
         ),
-        switchMap((bookedSlots) =>
-          this.scheduleService.getAvailableSlots$(date, bookedSlots).pipe(
-            map((slots) =>
-              slots.map((slotIso) => ({
-                iso: slotIso,
-                label: this.datePipe.transform(slotIso, 'HH:mm') ?? '',
-              }))
-            )
-          )
-        )
+        catchError(() => of([]))
       );
     })
   );
@@ -138,7 +139,7 @@ export class NewBookingDialogComponent {
         taskId: parsedTaskId,
         userId: parsedUserId,
         scheduledDate: raw.slot,
-        paymentMethod: 'direct',
+        paymentMethod: raw.paymentMethod,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -152,6 +153,20 @@ export class NewBookingDialogComponent {
           this.snackBar.open(message, 'Fechar', { duration: 3500 });
         },
       });
+  }
+
+  isPaymentMethodSelected(method: BookingPaymentMethod): boolean {
+    return this.form.controls.paymentMethod.value === method;
+  }
+
+  setPaymentMethod(method: BookingPaymentMethod): void {
+    this.form.controls.paymentMethod.setValue(method);
+  }
+
+  get paymentMethodLabel(): string {
+    return this.form.controls.paymentMethod.value === 'wallet'
+      ? 'Pagamento pela carteira do app (saldo).'
+      : 'Pagamento direto no cartao de credito.';
   }
 
   private currencyPipe = inject(CurrencyPipe);
@@ -182,5 +197,19 @@ export class NewBookingDialogComponent {
       a.getMonth() === b.getMonth() &&
       a.getFullYear() === b.getFullYear()
     );
+  }
+
+  private getBookedSlotsFromUi(date: Date, bookings: Booking[]): string[] {
+    return bookings
+      .filter((booking) => booking.status !== 'cancelled')
+      .filter((booking) => this.isSameDay(new Date(booking.startAt), date))
+      .map((booking) => booking.startAt);
+  }
+
+  private getBookedSlotsFromApi(date: Date, bookings: ApiBooking[]): string[] {
+    return bookings
+      .filter((booking) => booking.status?.toLowerCase() !== 'cancelled')
+      .filter((booking) => this.isSameDay(new Date(booking.scheduledDate), date))
+      .map((booking) => booking.scheduledDate);
   }
 }

@@ -46,15 +46,43 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Horario disponivel</mat-label>
-      <mat-select formControlName="slot">
-        @for (slot of availableSlots$ | async; track slot.iso) {
-          <mat-option [value]="slot.iso">{{ slot.label }}</mat-option>
+      <mat-select formControlName="slot" [disabled]="!form.controls.date.value">
+        @if (availableSlots$ | async; as slots) {
+          @for (slot of slots; track slot.iso) {
+            <mat-option [value]="slot.iso">{{ slot.label }}</mat-option>
+          }
+          @if (slots.length === 0) {
+            <mat-option disabled>Nenhum horario disponivel para a data selecionada</mat-option>
+          }
         }
       </mat-select>
       @if (form.controls.slot.hasError('required')) {
         <mat-error>Selecione um horario.</mat-error>
       }
     </mat-form-field>
+
+    <section class="payment-method-section full-row">
+      <label>Forma de pagamento</label>
+      <div class="payment-method-grid">
+        <button
+          class="payment-method-btn"
+          type="button"
+          [class.active]="isPaymentMethodSelected('wallet')"
+          (click)="setPaymentMethod('wallet')">
+          <mat-icon>account_balance_wallet</mat-icon>
+          Carteira do app
+        </button>
+        <button
+          class="payment-method-btn"
+          type="button"
+          [class.active]="isPaymentMethodSelected('direct')"
+          (click)="setPaymentMethod('direct')">
+          <mat-icon>credit_card</mat-icon>
+          Cartao de credito
+        </button>
+      </div>
+      <p class="payment-method-hint">{{ paymentMethodLabel }}</p>
+    </section>
   </form>
 </mat-dialog-content>
 

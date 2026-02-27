@@ -74,6 +74,13 @@ export class BookingService {
       const bookingPayment = manager.create(Payment, {
         amount: taskPrice,
         currency: paymentCurrency,
+        type: 'BOOKING_CHARGE',
+        status: bookingDto.paymentMethod === 'wallet' ? 'COMPLETED' : 'PENDING',
+        reference: `BOOKING-${task.id}-${scheduledDate.getTime()}`,
+        description:
+          bookingDto.paymentMethod === 'wallet'
+            ? `Pagamento do agendamento para ${task.title}`
+            : `Cobranca pendente do agendamento para ${task.title}`,
         user,
       });
       await manager.save(bookingPayment);
@@ -83,7 +90,7 @@ export class BookingService {
         user,
         task,
         status: 'booked',
-        paid: true,
+        paid: bookingDto.paymentMethod === 'wallet',
       });
 
       return manager.save(newBooking);
@@ -125,9 +132,32 @@ export class BookingService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      user.balance += Number(bookingToCancel.task.price);
-      await manager.save(user);
+      if (bookingToCancel.paid) {
+        const currentBalance = Number(user.balance);
+        const refundAmount = Number(bookingToCancel.task.price);
+        if (
+          !Number.isFinite(currentBalance) ||
+          !Number.isFinite(refundAmount)
+        ) {
+          throw new BadRequestException('Invalid balance or refund amount');
+        }
+
+        user.balance = currentBalance + refundAmount;
+        await manager.save(user);
+
+        const refundPayment = manager.create(Payment, {
+          amount: refundAmount,
+          currency: 'BRL',
+          type: 'BOOKING_REFUND',
+          status: 'COMPLETED',
+          reference: `REFUND-${bookingToCancel.id}`,
+          description: `Estorno do agendamento ${bookingToCancel.id}`,
+          user,
+        });
+        await manager.save(refundPayment);
+      }
       bookingToCancel.status = 'cancelled';
+      bookingToCancel.paid = false;
       await manager.save(bookingToCancel);
       return bookingToCancel;
     });

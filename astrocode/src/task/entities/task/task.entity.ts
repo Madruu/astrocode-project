@@ -8,6 +8,11 @@ import {
   ManyToOne,
 } from 'typeorm';
 
+const numericTransformer = {
+  to: (value: number) => value,
+  from: (value: string | number | null): number => Number(value ?? 0),
+};
+
 @Entity({ name: 'tasks' })
 export class Task {
   @PrimaryGeneratedColumn('identity', { type: 'int' })
@@ -19,7 +24,7 @@ export class Task {
   @Column({ type: 'varchar' })
   description: string;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', default: 0, transformer: numericTransformer })
   price: number = 0;
 
   @ManyToOne(() => User, (provider) => provider.tasksProvided, {

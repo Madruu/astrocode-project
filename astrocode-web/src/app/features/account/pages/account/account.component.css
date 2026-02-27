@@ -1,5 +1,7 @@
 .account-layout {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(135deg, rgba(56, 163, 165, 0.12) 0%, rgba(87, 204, 153, 0.16) 100%);
 }
 
@@ -55,13 +57,37 @@
 }
 
 .nav-link.active {
-  background: #22577a;
+  background: #22a76f;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+
+.user-meta strong {
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+.user-meta span {
+  color: #cbd5e1;
+  font-size: 0.8rem;
 }
 
 .logout-button {
-  border-color: #22577a;
+  border-color: rgba(255, 255, 255, 0.45);
   color: #ffffff !important;
-  background: #22577a;
+  background: rgba(34, 87, 122, 0.45);
+  border-radius: 10px;
 }
 
 .logout-button mat-icon {
@@ -69,101 +95,236 @@
 }
 
 .main-content {
-  padding: 1.25rem;
+  flex: 1;
+  padding: 1.3rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.page-title h1 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 2.1rem;
 }
 
 .cards-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 0.92fr;
   gap: 1rem;
   align-items: start;
 }
 
-.account-card {
-  width: 100%;
-  padding: 1rem;
-  background: #fff;
-  color: #0b132b;
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  box-shadow: none;
-}
-
-.account-card h2 {
-  margin: 0 0 0.8rem;
-  font-size: 1.45rem;
-}
-
-.wallet-card {
-  width: 100%;
-  padding: 1rem;
-  background: #fff;
-  color: #0b132b;
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  box-shadow: none;
-}
-
-.wallet-card h2 {
-  margin: 0 0 0.8rem;
-  font-size: 1.45rem;
-}
-
-.wallet-card p {
-  margin: 0;
-  padding: 0.65rem 0.75rem;
-  border-radius: 10px;
-  border: 1px solid #b7e4c7;
-  background: #f0fff4;
-  color: #22577a;
-  font-weight: 600;
-}
-
-.wallet-card button {
-  display: block;
-  width: 100%;
-  margin-top: 0.5rem;
-}
-
-.wallet-button {
-  border-color: #57cc99;
-  color: #0b132b !important;
-  background: rgba(87, 204, 153, 0.12);
-  border-radius: 10px;
-}
-
-.back-button {
-  border-color: #cbd5e1;
-  color: #0b132b !important;
-  background: #f8fafc;
-  border-radius: 10px;
-}
-
-dl {
-  margin: 0;
+.left-column,
+.right-column {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
-.row {
+.panel-card {
+  padding: 1rem;
+  background: #ffffff;
+  color: #0b132b;
+  border-radius: 14px;
+  border: 1px solid #dbe6ef;
+  box-shadow: 0 6px 18px rgba(11, 19, 43, 0.08);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.8rem;
+}
+
+.card-header.compact {
+  margin-bottom: 0;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.05;
+  color: #1e293b;
+}
+
+.card-header p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+}
+
+.icon-badge {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.icon-badge.blue {
+  background: linear-gradient(135deg, #22577a, #38a3a5);
+}
+
+.icon-badge.green {
+  background: linear-gradient(135deg, #22a76f, #10b981);
+}
+
+.icon-badge.cyan {
+  background: linear-gradient(135deg, #38a3a5, #22577a);
+}
+
+.icon-badge.purple {
+  background: linear-gradient(135deg, #22577a, #38a3a5);
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.form-grid mat-form-field {
+  width: 100%;
+}
+
+.gradient-btn {
+  margin-top: 0.4rem;
+  border-radius: 8px;
+  color: #ffffff !important;
+  background: linear-gradient(90deg, #22577a, #38a3a5) !important;
+}
+
+.solid-btn {
+  margin-top: 0.4rem;
+  border-radius: 8px;
+  color: #ffffff !important;
+  background: linear-gradient(90deg, #22a76f, #0ea76f) !important;
+}
+
+.wallet-panel {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.wallet-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.wallet-top strong {
+  font-size: 2rem;
+  color: #0d9488;
+  line-height: 1;
+  margin-top: 0.2rem;
+}
+
+.wallet-add-btn {
+  border-radius: 8px;
+  color: #ffffff !important;
+  background: linear-gradient(90deg, #38a3a5, #22577a) !important;
+}
+
+.wallet-add-btn mat-icon {
+  margin-right: 0.2rem;
+}
+
+.transactions-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.transaction-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 0.6rem 0.75rem;
+  padding: 0.7rem;
   background: #f8fafc;
 }
 
-dt {
-  color: #475569;
+.transaction-icon {
+  color: #16a34a;
+  display: inline-flex;
+}
+
+.transaction-content {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.transaction-content strong {
+  color: #1e293b;
+  font-size: 0.93rem;
+}
+
+.transaction-content span {
+  color: #64748b;
   font-size: 0.8rem;
 }
 
-dd {
-  margin: 0.2rem 0 0;
-  font-weight: 600;
+.transaction-meta {
+  display: grid;
+  justify-items: end;
+  gap: 0.2rem;
 }
 
-.actions {
-  margin-top: 1rem;
+.amount-in {
+  color: #22a76f;
+}
+
+.amount-out {
+  color: #22577a;
+}
+
+.status-chip {
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #166534;
+  background: #dcfce7;
+}
+
+.status-chip.pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.empty-history {
+  margin: 0.2rem 0;
+  color: #64748b;
+}
+
+.history-btn {
+  margin-top: 0.7rem;
+  width: 100%;
+  border-radius: 10px;
+  border-color: #cbd5e1;
+  color: #1e293b !important;
+  background: #f8fafc;
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  color: #64748b;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 1100px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-top strong {
+    font-size: 1.7rem;
+  }
 }
 
 @media (max-width: 920px) {
@@ -178,7 +339,23 @@ dd {
     overflow-x: auto;
   }
 
-  .cards-grid {
+  .user-area {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .transaction-item {
     grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .transaction-meta {
+    justify-items: start;
   }
 }
