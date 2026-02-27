@@ -39,6 +39,14 @@ export const routes: Routes = [
       import('./features/services/pages/services/services.component').then((m) => m.ServicesComponent),
   },
   {
+    path: 'provider-services',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/services/pages/provider-services/provider-services.component').then(
+        (m) => m.ProviderServicesComponent
+      ),
+  },
+  {
     path: 'schedule',
     canActivate: [authGuard],
     loadComponent: () =>

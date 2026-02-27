@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -28,27 +28,52 @@ import { AuthService } from '../../services/auth.service';
     MatRadioModule,
   ],
 })
-export class SignupComponent implements OnDestroy {
+export class SignupComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private destroy$ = new Subject<void>();
 
-  readonly mockCredentials = this.authService.getMockCredentials();
   loading = signal(false);
   errorMessage = signal<string | null>(null);
 
   signupForm = this.fb.group({
-    email: [this.mockCredentials.email, [Validators.required, Validators.email]],
-    password: [this.mockCredentials.password, [Validators.required, Validators.minLength(6)]],
-    confirmPassword: [this.mockCredentials.password, [Validators.required, Validators.minLength(6)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', [Validators.required, Validators.minLength(6)]],
 
     accountType: ['USER', [Validators.required]],
-    cnpj: [null, [Validators.required, Validators.minLength(14), Validators.maxLength(14), Validators.pattern(/^\d{14}$/)]],
+    cnpj: [null as string | null],
   });
 
+  ngOnInit(): void {
+    this.signupForm.controls.accountType.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((accountType) => {
+      const cnpjControl = this.signupForm.controls.cnpj;
+      if (accountType === 'PROVIDER') {
+        cnpjControl.setValidators([
+          Validators.required,
+          Validators.minLength(14),
+          Validators.maxLength(14),
+          Validators.pattern(/^\d{14}$/),
+        ]);
+      } else {
+        cnpjControl.clearValidators();
+        cnpjControl.setValue(null);
+      }
+      cnpjControl.updateValueAndValidity();
+    });
+  }
+
   onSubmit() {
-    if (this.signupForm.invalid) return;
+    this.signupForm.markAllAsTouched();
+    if (this.signupForm.invalid) {
+      this.errorMessage.set('Preencha os campos obrigatórios corretamente.');
+      return;
+    }
+    if (this.signupForm.value.password !== this.signupForm.value.confirmPassword) {
+      this.errorMessage.set('As senhas não coincidem.');
+      return;
+    }
 
     this.loading.set(true);
     this.errorMessage.set(null);

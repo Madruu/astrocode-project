@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, catchError, map, tap, throwError, timeout } from 'rxjs';
+import { buildApiUrl } from '../../../core/config/api.config';
 
 export interface AuthUser {
   id: string;
@@ -10,14 +11,18 @@ export interface AuthUser {
 }
 
 interface LoginResponse {
-  accessToken: string;
-  user: AuthUser;
+  userId: number | string;
+  user: string;
+  email?: string;
+  token: string;
+  accountType: 'USER' | 'PROVIDER';
 }
 
 interface SignupResponse {
-  accessToken: string;
-  user: AuthUser;
-  message: string;
+  id: number | string;
+  name: string;
+  email: string;
+  accountType?: 'USER' | 'PROVIDER';
 }
 
 interface SignupPayload {
@@ -34,67 +39,46 @@ export class AuthService {
   private http = inject(HttpClient);
   private readonly tokenKey = 'token';
   private readonly userKey = 'auth_user';
-  private readonly mockUserAccount = {
-    email: 'demo@astrocode.com',
-    password: '123456',
-    user: {
-      id: 'user-001',
-      name: 'Conta Demo',
-      email: 'demo@astrocode.com',
-      accountType: 'USER',
-    } satisfies AuthUser,
-  };
-  private readonly mockProviderAccount = {
-    email: 'provider@astrocode.com',
-    password: '123456',
-    user: {
-      id: 'provider-001',
-      name: 'Prestador Demo',
-      email: 'provider@astrocode.com',
-      accountType: 'PROVIDER',
-    } satisfies AuthUser,
-  };
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.readUserFromStorage());
 
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
   login(credentials: { email: string; password: string }): Observable<AuthUser> {
     return this.http
-      .post<LoginResponse>('/api/login', credentials)
+      .post<LoginResponse>(buildApiUrl('/auth/signin'), credentials)
       .pipe(
-        catchError(() => {
-          const isMockUserLogin =
-            credentials.email === this.mockUserAccount.email &&
-            credentials.password === this.mockUserAccount.password;
-          const isMockProviderLogin =
-            credentials.email === this.mockProviderAccount.email &&
-            credentials.password === this.mockProviderAccount.password;
-
-          if (!isMockUserLogin && !isMockProviderLogin) {
-            return throwError(() => new Error('Email ou senha invalidos para a conta mock.'));
+        timeout(10000),
+        catchError((error: unknown) => {
+          if ((error as { name?: string })?.name === 'TimeoutError') {
+            return throwError(() => new Error('Tempo de resposta excedido ao autenticar.'));
           }
 
-          const fallbackResponse: LoginResponse = {
-            accessToken: `mock-jwt-${Date.now()}`,
-            user: isMockProviderLogin ? this.mockProviderAccount.user : this.mockUserAccount.user,
-          };
-
-          return of(fallbackResponse);
+          if (error instanceof HttpErrorResponse && error.status !== 0) {
+            const backendMessage =
+              typeof error.error?.message === 'string'
+                ? error.error.message
+                : 'Email ou senha invalidos.';
+            return throwError(() => new Error(backendMessage));
+          }
+          return throwError(() => new Error('Nao foi possivel autenticar com o servidor.'));
         }),
         tap((response) => {
-          localStorage.setItem(this.tokenKey, response.accessToken);
-          localStorage.setItem(this.userKey, JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
+          const user = this.toAuthUser(response, credentials.email);
+          localStorage.setItem(this.tokenKey, response.token);
+          localStorage.setItem(this.userKey, JSON.stringify(user));
+          this.currentUserSubject.next(user);
         }),
-        map((response) => response.user)
+        map((response) => this.toAuthUser(response, credentials.email))
       );
   }
 
   signup(credentials: SignupPayload): Observable<AuthUser> {
     return this.http
-      .post<SignupResponse>('/api/signup', {
+      .post<SignupResponse>(buildApiUrl('/user'), {
+        name: credentials.email.split('@')[0] || 'Novo Usuario',
         email: credentials.email,
         password: credentials.password,
+        confirmPassword: credentials.password,
         accountType: credentials.accountType,
         cnpj: credentials.cnpj,
       })
@@ -102,19 +86,13 @@ export class AuthService {
         catchError(() => {
           return throwError(() => new Error('Erro ao criar conta'));
         }),
-        tap((response) => {
-          localStorage.setItem(this.tokenKey, response.accessToken);
-        }),
-        map((response) => response.user)
+        map((response) => ({
+          id: String(response.id),
+          name: response.name,
+          email: response.email,
+          accountType: response.accountType ?? credentials.accountType,
+        }))
       );
-  }
-
-  getMockCredentials(): { email: string; password: string } {
-    return { email: this.mockUserAccount.email, password: this.mockUserAccount.password };
-  }
-
-  getMockProviderCredentials(): { email: string; password: string } {
-    return { email: this.mockProviderAccount.email, password: this.mockProviderAccount.password };
   }
 
   logout(): void {
@@ -141,6 +119,39 @@ export class AuthService {
       return JSON.parse(userRaw) as AuthUser;
     } catch {
       localStorage.removeItem(this.userKey);
+      return null;
+    }
+  }
+
+  private toAuthUser(response: LoginResponse, email: string): AuthUser {
+    const tokenUserId = this.extractUserIdFromToken(response.token);
+    const resolvedUserId =
+      response.userId !== undefined && response.userId !== null
+        ? String(response.userId)
+        : tokenUserId !== null
+          ? String(tokenUserId)
+          : email;
+
+    return {
+      id: resolvedUserId,
+      name: response.user,
+      email: response.email ?? email,
+      accountType: response.accountType,
+    };
+  }
+
+  private extractUserIdFromToken(token: string): number | null {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return null;
+      }
+
+      const payloadJson = atob(parts[1]);
+      const payload = JSON.parse(payloadJson) as { sub?: number | string };
+      const parsedSub = Number(payload.sub);
+      return Number.isInteger(parsedSub) ? parsedSub : null;
+    } catch {
       return null;
     }
   }

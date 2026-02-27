@@ -5,10 +5,6 @@
       Crie sua conta
     </mat-card-title>
 
-    <p class="mock-account">
-      Conta mock: <strong>{{ mockCredentials.email }}</strong> / <strong>{{ mockCredentials.password }}</strong>
-    </p>
-
     <form 
       [formGroup]="signupForm" 
       (ngSubmit)="onSubmit()" 
@@ -93,11 +89,12 @@
       <button 
         mat-raised-button 
         color="primary" 
-        type="submit"
+        type="button"
         class="signup-button"
-        [disabled]="signupForm.invalid">
+        (click)="onSubmit()"
+        [disabled]="loading()">
 
-        Criar conta
+        {{ loading() ? 'Criando...' : 'Criar conta' }}
 
       </button>
 

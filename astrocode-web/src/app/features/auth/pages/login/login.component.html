@@ -5,14 +5,6 @@
       Acesse sua conta
     </mat-card-title>
 
-    <p class="mock-account">
-      Usuario mock: <strong>{{ mockCredentials.email }}</strong> / <strong>{{ mockCredentials.password }}</strong>
-    </p>
-    <p class="mock-account">
-      Prestador mock: <strong>{{ mockProviderCredentials.email }}</strong> /
-      <strong>{{ mockProviderCredentials.password }}</strong>
-    </p>
-
     <form 
       [formGroup]="loginForm" 
       (ngSubmit)="onSubmit()" 
@@ -59,19 +51,16 @@
       <button 
         mat-raised-button 
         color="primary" 
-        type="submit"
+        type="button"
         class="login-button"
-        [disabled]="loginForm.invalid">
-
-        Entrar
-
+        (click)="onSubmit()"
+        [disabled]="loading()">
+        {{ loading() ? 'Entrando...' : 'Entrar' }}
       </button>
 
+      @if (errorMessage()) {
+        <p class="error-message">{{ errorMessage() }}</p>
+      }
     </form>
-
-    @if (errorMessage(); as message) {
-      <p class="error-banner">{{ message }}</p>
-    }
-
   </mat-card>
 </main>

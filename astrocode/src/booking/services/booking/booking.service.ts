@@ -105,9 +105,19 @@ export class BookingService {
     return this.dataSource.transaction(async (manager) => {
       const bookingToCancel = await manager.findOne(Booking, {
         where: { id: cancelBookingDto.bookingId },
+        relations: ['user', 'task'],
       });
       if (!bookingToCancel) {
         throw new NotFoundException('Booking not found');
+      }
+      if (!bookingToCancel.user?.id) {
+        throw new NotFoundException('Booking user not found');
+      }
+      if (!bookingToCancel.task) {
+        throw new NotFoundException('Booking task not found');
+      }
+      if (bookingToCancel.status === 'cancelled') {
+        throw new BadRequestException('Booking already cancelled');
       }
       const user = await manager.findOne(User, {
         where: { id: bookingToCancel.user.id },

@@ -10,10 +10,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BookingService } from 'src/app/core/services/booking.service';
 import { map } from 'rxjs/operators';
 import { LoadingService } from 'src/app/core/services/loading.service';
-import { combineLatest, filter, take } from 'rxjs';
+import { catchError, combineLatest, filter, Observable, of, take } from 'rxjs';
 import { AuthService } from 'src/app/features/auth/services/auth.service';
 import { Booking } from 'src/app/core/services/booking.service';
 import { NewBookingDialogComponent } from 'src/app/features/dashboard/components/new-booking-dialog/new-booking-dialog.component';
+import { ProviderTaskApiService } from 'src/app/core/services/provider-task-api.service';
 
 interface ServiceItem {
   id: string;
@@ -41,6 +42,7 @@ interface ServiceItem {
 export class ServicesComponent {
   private authService = inject(AuthService);
   private bookingService = inject(BookingService);
+  private providerTaskApiService = inject(ProviderTaskApiService);
   private loadingService = inject(LoadingService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
@@ -48,13 +50,21 @@ export class ServicesComponent {
   readonly user$ = this.authService.currentUser$;
   readonly bookings$ = this.bookingService.getBookings$();
 
-  readonly services$ = this.bookingService.getServiceOptions$().pipe(
-    map((services) => services.map((service) => ({
-      id: service.id,
-      title: service.name,
-      duration: `${service.durationMinutes} min`,
-      price: `R$ ${service.price.toFixed(2)}`,
-    }))),
+  readonly services$: Observable<ServiceItem[]> = this.providerTaskApiService.getProviderTasks$().pipe(
+    map((services) =>
+      services.map((service) => ({
+        id: service.id,
+        title: service.name,
+        duration: `${service.durationMinutes} min`,
+        price: `R$ ${service.price.toFixed(2)}`,
+      }))
+    ),
+    map((services) => services.sort((a, b) => a.title.localeCompare(b.title))),
+    catchError((error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Erro ao carregar servicos.';
+      this.snackBar.open(message, 'Fechar', { duration: 3000 });
+      return of([]);
+    })
   );
   readonly loading$ = this.loadingService.isLoading$;
 

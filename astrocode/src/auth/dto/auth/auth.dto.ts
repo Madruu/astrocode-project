@@ -20,7 +20,9 @@ export class SignInDto {
 }
 
 export class LoginResponseDTO {
+  userId: number;
   user: string;
+  email: string;
   token: string;
   accountType: string;
 }

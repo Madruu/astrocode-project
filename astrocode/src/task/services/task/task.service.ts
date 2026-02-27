@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -55,7 +56,11 @@ export class TaskService {
     return resultTask;
   }
 
-  async updateTask(id: number, task: UpdateTaskDto): Promise<Task> {
+  async updateTask(
+    id: number,
+    task: UpdateTaskDto,
+    providerId: number,
+  ): Promise<Task> {
     const resultTask = await this.dataSource.transaction(
       async (transactionManager) => {
         const taskToUpdate = await transactionManager.findOne(Task, {
@@ -65,6 +70,7 @@ export class TaskService {
         if (!taskToUpdate) {
           throw new NotFoundException('Task not found');
         }
+        this.ensureTaskProviderOwnership(taskToUpdate, providerId);
         return transactionManager.save(Task, {
           ...taskToUpdate,
           ...task,
@@ -74,15 +80,25 @@ export class TaskService {
     return resultTask;
   }
 
-  async deleteTask(id: number): Promise<void> {
+  async deleteTask(id: number, providerId: number): Promise<void> {
     return this.dataSource.transaction(async (transactionManager) => {
       const taskToDelete = await transactionManager.findOne(Task, {
         where: { id },
+        relations: ['provider'],
       });
       if (!taskToDelete) {
         throw new NotFoundException('Task not found');
       }
+      this.ensureTaskProviderOwnership(taskToDelete, providerId);
       await transactionManager.delete(Task, taskToDelete);
     });
+  }
+
+  private ensureTaskProviderOwnership(task: Task, providerId: number): void {
+    if (!task.provider || task.provider.id !== providerId) {
+      throw new ForbiddenException(
+        'You do not have permission to modify this task',
+      );
+    }
   }
 }

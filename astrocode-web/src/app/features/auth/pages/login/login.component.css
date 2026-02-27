@@ -26,16 +26,6 @@
   color: #0b132b;
 }
 
-.mock-account {
-  margin: 0 0 1.2rem;
-  padding: 0.65rem 0.75rem;
-  border-radius: 10px;
-  border: 1px solid #b7e4c7;
-  background: #f0fff4;
-  color: #22577a;
-  font-size: 0.9rem;
-}
-
 .login-form {
   display: flex;
   flex-direction: column;

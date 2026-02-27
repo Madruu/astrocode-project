@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -11,6 +12,7 @@ import { EMPTY, catchError, filter, map, switchMap, take } from 'rxjs';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Booking, BookingService } from '../../../../core/services/booking.service';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { CancelBookingReasonDialogComponent } from '../../../../shared/components/cancel-booking-reason-dialog/cancel-booking-reason-dialog.component';
 
 interface KanbanColumnVm {
   id: 'ativos' | 'concluidos' | 'cancelados';
@@ -40,6 +42,7 @@ export class ScheduleComponent {
   private bookingService = inject(BookingService);
   private loadingService = inject(LoadingService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
   private router = inject(Router);
 
   readonly loading$ = this.loadingService.isLoading$;
@@ -65,11 +68,22 @@ export class ScheduleComponent {
   }
 
   cancelBooking(bookingId: string): void {
-    this.user$
+    const dialogRef = this.dialog.open(CancelBookingReasonDialogComponent, { width: '520px' });
+
+    dialogRef
+      .afterClosed()
       .pipe(
+        filter((reason): reason is string => !!reason && reason.trim().length >= 3),
+        map((reason) => reason.trim()),
         take(1),
-        filter((user): user is NonNullable<typeof user> => !!user),
-        switchMap((user) => this.bookingService.cancelBooking$(bookingId, user.id)),
+        switchMap((reason) =>
+          this.user$.pipe(
+            take(1),
+            filter((user): user is NonNullable<typeof user> => !!user),
+            switchMap((user) => this.bookingService.cancelBooking$(bookingId, user.id, reason))
+          )
+        ),
+        take(1),
         catchError((error: unknown) => {
           const message = error instanceof Error ? error.message : 'Falha ao cancelar o agendamento.';
           this.snackBar.open(message, 'Fechar', { duration: 3500 });

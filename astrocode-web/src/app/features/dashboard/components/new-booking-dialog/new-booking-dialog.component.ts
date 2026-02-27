@@ -8,9 +8,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { map, of, startWith, switchMap } from 'rxjs';
+import { catchError, map, of, startWith, switchMap } from 'rxjs';
 
-import { Booking, BookingService, ServiceOption } from '../../../../core/services/booking.service';
+import { Booking } from '../../../../core/services/booking.service';
+import { BookingApiService } from '../../../../core/services/booking-api.service';
+import { ProviderTask, ProviderTaskApiService } from '../../../../core/services/provider-task-api.service';
 import { ScheduleService } from '../../../../core/services/schedule.service';
 
 export interface NewBookingDialogData {
@@ -44,7 +46,8 @@ interface SlotOption {
 })
 export class NewBookingDialogComponent {
   private destroyRef = inject(DestroyRef);
-  private bookingService = inject(BookingService);
+  private bookingApiService = inject(BookingApiService);
+  private providerTaskApiService = inject(ProviderTaskApiService);
   private scheduleService = inject(ScheduleService);
   private snackBar = inject(MatSnackBar);
 
@@ -55,7 +58,7 @@ export class NewBookingDialogComponent {
     slot: ['', Validators.required],
   });
 
-  readonly serviceOptions$ = this.bookingService.getServiceOptions$();
+  readonly serviceOptions$ = this.providerTaskApiService.getProviderTasks$().pipe(catchError(() => of([])));
   readonly availableSlots$ = this.form.controls.date.valueChanges.pipe(
     startWith(this.form.controls.date.value),
     map((dateValue) => this.parseInputDate(dateValue)),
@@ -64,17 +67,23 @@ export class NewBookingDialogComponent {
         return of([] as SlotOption[]);
       }
 
-      const bookedSlots = this.data.bookings
-        .filter((booking) => booking.status === 'confirmed')
-        .filter((booking) => this.isSameDay(new Date(booking.startAt), date))
-        .map((booking) => booking.startAt);
-
-      return this.scheduleService.getAvailableSlots$(date, bookedSlots).pipe(
-        map((slots) =>
-          slots.map((slotIso) => ({
-            iso: slotIso,
-            label: this.datePipe.transform(slotIso, 'HH:mm') ?? '',
-          }))
+      return this.bookingApiService.getBookings$().pipe(
+        catchError(() => of([])),
+        map((bookings) =>
+          bookings
+            .filter((booking) => booking.status !== 'cancelled')
+            .filter((booking) => this.isSameDay(new Date(booking.scheduledDate), date))
+            .map((booking) => booking.scheduledDate)
+        ),
+        switchMap((bookedSlots) =>
+          this.scheduleService.getAvailableSlots$(date, bookedSlots).pipe(
+            map((slots) =>
+              slots.map((slotIso) => ({
+                iso: slotIso,
+                label: this.datePipe.transform(slotIso, 'HH:mm') ?? '',
+              }))
+            )
+          )
         )
       );
     })
@@ -97,7 +106,7 @@ export class NewBookingDialogComponent {
     });
   }
 
-  displayServiceLabel(service: ServiceOption): string {
+  displayServiceLabel(service: ProviderTask): string {
     const duration = `${service.durationMinutes} min`;
     const price = this.currencyPipe.transform(service.price, 'BRL', 'symbol', '1.2-2') ?? 'R$ 0,00';
     return `${service.name} - ${duration} - ${price}`;
@@ -112,12 +121,24 @@ export class NewBookingDialogComponent {
     const raw = this.form.getRawValue();
     this.loading = true;
 
-    this.bookingService
+    const parsedTaskId = Number(raw.serviceId);
+    const parsedUserId = Number(this.data.userId);
+    if (!Number.isInteger(parsedTaskId) || !Number.isInteger(parsedUserId)) {
+      this.loading = false;
+      this.snackBar.open(
+        'Sessao invalida para agendamento. Faca logout e login novamente.',
+        'Fechar',
+        { duration: 4000 }
+      );
+      return;
+    }
+
+    this.bookingApiService
       .createBooking$({
-        clientName: raw.clientName.trim(),
-        userId: this.data.userId,
-        serviceId: raw.serviceId,
-        startAt: raw.slot,
+        taskId: parsedTaskId,
+        userId: parsedUserId,
+        scheduledDate: raw.slot,
+        paymentMethod: 'direct',
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

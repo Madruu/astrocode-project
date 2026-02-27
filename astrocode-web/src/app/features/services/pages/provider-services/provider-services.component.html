@@ -1,0 +1,151 @@
+<div class="provider-services-layout">
+  <header class="topbar">
+    <div class="brand">
+      <mat-icon>event</mat-icon>
+      <span>AgendaFacil</span>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegacao principal">
+      <a class="nav-link" routerLink="/provider-dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a class="nav-link active" routerLink="/provider-services">
+        <mat-icon>work_outline</mat-icon>
+        Servicos
+      </a>
+      <a class="nav-link" routerLink="/schedule">
+        <mat-icon>calendar_month</mat-icon>
+        Agendamentos
+      </a>
+      <a class="nav-link" routerLink="/calendar">
+        <mat-icon>calendar_today</mat-icon>
+        Calendario
+      </a>
+      <span class="nav-link disabled-link" aria-disabled="true">
+        <mat-icon>payments</mat-icon>
+        Pagamentos
+      </span>
+    </nav>
+
+    <div class="user-area">
+      <div class="user-meta">
+        <strong>Administrador</strong>
+        <span>{{ (user$ | async)?.email || 'admin@exemplo.com' }}</span>
+      </div>
+      <button class="logout-button" mat-stroked-button type="button" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sair
+      </button>
+    </div>
+  </header>
+
+  <main class="services-page">
+    <section class="header-row">
+      <div class="header">
+        <h1>Servicos</h1>
+        <p>Navegue e gerencie os servicos disponiveis</p>
+      </div>
+
+      <button class="new-service-btn" mat-flat-button type="button" (click)="openCreateForm()">
+        <mat-icon>add</mat-icon>
+        Novo Servico
+      </button>
+    </section>
+
+    @if (formVisible()) {
+      <mat-card class="service-form-card">
+        <div class="form-header">
+          <h2>{{ editingServiceId() ? 'Editar servico' : 'Novo servico' }}</h2>
+          <p>Preencha as informacoes para salvar o servico.</p>
+        </div>
+
+        <form class="service-form" [formGroup]="serviceForm" (ngSubmit)="saveService()">
+          <mat-form-field appearance="outline">
+            <mat-label>Nome do servico</mat-label>
+            <input matInput formControlName="name" />
+            @if (serviceForm.controls.name.hasError('required') && serviceForm.controls.name.touched) {
+              <mat-error>Informe o nome do servico.</mat-error>
+            }
+            @if (serviceForm.controls.name.hasError('minlength') && serviceForm.controls.name.touched) {
+              <mat-error>Use ao menos 3 caracteres.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Duracao (minutos)</mat-label>
+            <input matInput type="number" formControlName="durationMinutes" />
+            @if (
+              (serviceForm.controls.durationMinutes.hasError('required') ||
+                serviceForm.controls.durationMinutes.hasError('min')) &&
+              serviceForm.controls.durationMinutes.touched
+            ) {
+              <mat-error>Informe ao menos 10 minutos.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Preco (R$)</mat-label>
+            <input matInput type="number" min="1" step="0.01" formControlName="price" />
+            @if ((serviceForm.controls.price.hasError('required') || serviceForm.controls.price.hasError('min')) && serviceForm.controls.price.touched) {
+              <mat-error>Informe um preco valido.</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-stroked-button type="button" (click)="cancelForm()" [disabled]="saving()">
+              Cancelar
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+              {{ editingServiceId() ? 'Salvar alteracoes' : 'Criar servico' }}
+            </button>
+          </div>
+        </form>
+      </mat-card>
+    }
+
+    <section class="services-grid">
+      @for (service of services$ | async; track service.id; let i = $index) {
+        <mat-card class="service-card" [class.alt-card]="i % 2 === 1">
+          <div class="service-header">
+            <div class="service-title">
+              <h2>{{ service.title }}</h2>
+              <span class="chip">{{ service.category }}</span>
+            </div>
+
+            <div class="service-actions">
+              <button mat-icon-button type="button" aria-label="Editar servico" (click)="openEditForm(service)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                aria-label="Excluir servico"
+                (click)="deleteService(service)"
+                [disabled]="deletingServiceId() === service.id">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <p class="description">{{ service.description }}</p>
+
+          <div class="meta-row">
+            <span>
+              <mat-icon>schedule</mat-icon>
+              {{ service.durationLabel }}
+            </span>
+            <span>
+              <mat-icon>attach_money</mat-icon>
+              {{ service.priceLabel }}
+            </span>
+          </div>
+        </mat-card>
+      }
+    </section>
+  </main>
+
+  <footer class="services-footer">
+    <p>© 2026 AgendaFacil. Plataforma de agendamento de servicos.</p>
+  </footer>
+</div>

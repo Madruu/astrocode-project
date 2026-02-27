@@ -25,7 +25,7 @@ import { AuthService } from '../../services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-  ],
+],
 })
 export class LoginComponent implements OnDestroy {
   private fb = inject(FormBuilder);
@@ -33,29 +33,36 @@ export class LoginComponent implements OnDestroy {
   private router = inject(Router);
   private destroy$ = new Subject<void>();
 
-  readonly mockCredentials = this.authService.getMockCredentials();
-  readonly mockProviderCredentials = this.authService.getMockProviderCredentials();
   loading = signal(false);
   errorMessage = signal<string | null>(null);
 
   loginForm = this.fb.group({
-    email: [this.mockCredentials.email, [Validators.required, Validators.email]],
-    password: [this.mockCredentials.password, [Validators.required, Validators.minLength(6)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   onSubmit() {
-    if (this.loginForm.invalid) return;
+    this.loginForm.markAllAsTouched();
+    if (this.loginForm.invalid) {
+      this.errorMessage.set('Preencha email e senha válidos.');
+      return;
+    }
 
     this.loading.set(true);
     this.errorMessage.set(null);
+    const payload = this.loginForm.getRawValue();
 
     this.authService
-      .login(this.loginForm.getRawValue() as any)
+      .login({
+        email: (payload.email ?? '').trim(),
+        password: String(payload.password ?? ''),
+      })
       .pipe(finalize(() => this.loading.set(false)), takeUntil(this.destroy$))
       .subscribe({
         next: (user) =>
           this.router.navigate([user.accountType === 'PROVIDER' ? '/provider-dashboard' : '/dashboard']),
-        error: () => this.errorMessage.set('Email ou senha inválidos'),
+        error: (error: unknown) =>
+          this.errorMessage.set(error instanceof Error ? error.message : 'Email ou senha inválidos'),
       });
   }
 
