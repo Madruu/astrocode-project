@@ -77,30 +77,4 @@ export class UserService {
   async findUserByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
   }
-
-  async addMoneyToUserBalance(id: number, amount: number): Promise<User> {
-    const userToUpdate = await this.userRepository.findOne({ where: { id } });
-    if (!userToUpdate) {
-      throw new NotFoundException('User not found');
-    }
-    if (amount <= 0) {
-      throw new BadRequestException('Amount must be greater than 0');
-    }
-
-    const currentBalance = Number(userToUpdate.balance);
-    if (!Number.isFinite(currentBalance)) {
-      throw new BadRequestException('Invalid user balance');
-    }
-
-    const newBalance = currentBalance + amount;
-    if (newBalance > 1000000) {
-      throw new BadRequestException('User balance cannot exceed 1000000');
-    }
-    return this.userRepository.save({
-      ...userToUpdate,
-      balance: newBalance,
-    });
-  }
-
-  //Add service to purchase a task
 }

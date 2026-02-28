@@ -11,7 +11,7 @@ import { CreateBookingDto } from 'src/booking/dto/booking/create-booking/create-
 import { Task } from 'src/task/entities/task/task.entity';
 import { User } from 'src/user/entities/user/user.entity';
 import { CancelBookingDto } from 'src/booking/dto/booking/create-booking/create-booking.dto';
-import { Payment } from 'src/payment/entities/payment/payment.entity';
+import { PaymentService } from 'src/payment/services/payment/payment.service';
 
 @Injectable()
 export class BookingService {
@@ -21,6 +21,7 @@ export class BookingService {
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
     private dataSource: DataSource,
+    private paymentService: PaymentService,
   ) {}
 
   async createBooking(bookingDto: CreateBookingDto): Promise<Booking> {
@@ -43,16 +44,6 @@ export class BookingService {
         throw new NotFoundException();
       }
 
-      const userBalance = Number(user.balance);
-      const taskPrice = Number(task.price);
-      if (!Number.isFinite(userBalance) || !Number.isFinite(taskPrice)) {
-        throw new BadRequestException('Invalid balance or task price');
-      }
-
-      if (bookingDto.paymentMethod === 'wallet' && userBalance < taskPrice) {
-        throw new BadRequestException('Insufficient balance');
-      }
-
       const existingBooking = await manager.findOne(Booking, {
         where: {
           task: { id: task.id },
@@ -64,33 +55,20 @@ export class BookingService {
         throw new BadRequestException('Time slot already booked');
       }
 
-      if (bookingDto.paymentMethod === 'wallet') {
-        user.balance = userBalance - taskPrice;
-        await manager.save(user);
-      }
-
-      const paymentCurrency = 'BRL';
-
-      const bookingPayment = manager.create(Payment, {
-        amount: taskPrice,
-        currency: paymentCurrency,
-        type: 'BOOKING_CHARGE',
-        status: bookingDto.paymentMethod === 'wallet' ? 'COMPLETED' : 'PENDING',
-        reference: `BOOKING-${task.id}-${scheduledDate.getTime()}`,
-        description:
-          bookingDto.paymentMethod === 'wallet'
-            ? `Pagamento do agendamento para ${task.title}`
-            : `Cobranca pendente do agendamento para ${task.title}`,
+      const { paid } = await this.paymentService.processBookingPayment({
+        manager,
         user,
+        task,
+        scheduledDate,
+        paymentMethod: bookingDto.paymentMethod,
       });
-      await manager.save(bookingPayment);
 
       const newBooking = manager.create(Booking, {
         scheduledDate,
         user,
         task,
         status: 'booked',
-        paid: bookingDto.paymentMethod === 'wallet',
+        paid,
       });
 
       return manager.save(newBooking);
@@ -133,28 +111,13 @@ export class BookingService {
         throw new NotFoundException('User not found');
       }
       if (bookingToCancel.paid) {
-        const currentBalance = Number(user.balance);
         const refundAmount = Number(bookingToCancel.task.price);
-        if (
-          !Number.isFinite(currentBalance) ||
-          !Number.isFinite(refundAmount)
-        ) {
-          throw new BadRequestException('Invalid balance or refund amount');
-        }
-
-        user.balance = currentBalance + refundAmount;
-        await manager.save(user);
-
-        const refundPayment = manager.create(Payment, {
-          amount: refundAmount,
-          currency: 'BRL',
-          type: 'BOOKING_REFUND',
-          status: 'COMPLETED',
-          reference: `REFUND-${bookingToCancel.id}`,
-          description: `Estorno do agendamento ${bookingToCancel.id}`,
+        await this.paymentService.refundBookingPayment(
+          manager,
           user,
-        });
-        await manager.save(refundPayment);
+          bookingToCancel.id,
+          refundAmount,
+        );
       }
       bookingToCancel.status = 'cancelled';
       bookingToCancel.paid = false;

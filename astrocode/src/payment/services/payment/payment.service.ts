@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Payment } from 'src/payment/entities/payment/payment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePaymentDto } from 'src/payment/dto/create-payment/create-payment.dto';
@@ -21,6 +21,14 @@ export interface WalletSummary {
   pendingTransactions: number;
 }
 
+export interface ProcessBookingPaymentInput {
+  manager: EntityManager;
+  user: User;
+  task: Task;
+  scheduledDate: Date;
+  paymentMethod: 'wallet' | 'direct';
+}
+
 @Injectable()
 export class PaymentService {
   constructor(
@@ -30,6 +38,78 @@ export class PaymentService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
+
+  async processBookingPayment({
+    manager,
+    user,
+    task,
+    scheduledDate,
+    paymentMethod,
+  }: ProcessBookingPaymentInput): Promise<{ paid: boolean; payment: Payment }> {
+    const currentBalance = Number(user.balance);
+    const taskPrice = Number(task.price);
+
+    if (!Number.isFinite(currentBalance) || !Number.isFinite(taskPrice)) {
+      throw new BadRequestException('Invalid balance or task price');
+    }
+
+    if (paymentMethod === 'wallet') {
+      if (currentBalance < taskPrice) {
+        throw new BadRequestException('Insufficient balance');
+      }
+
+      user.balance = currentBalance - taskPrice;
+      await manager.save(user);
+    }
+
+    const payment = manager.create(Payment, {
+      amount: taskPrice,
+      currency: 'BRL',
+      type: 'BOOKING_CHARGE',
+      status: paymentMethod === 'wallet' ? 'COMPLETED' : 'PENDING',
+      reference: `BOOKING-${task.id}-${scheduledDate.getTime()}`,
+      description:
+        paymentMethod === 'wallet'
+          ? `Pagamento do agendamento para ${task.title}`
+          : `Cobranca pendente do agendamento para ${task.title}`,
+      user,
+    });
+
+    const savedPayment = await manager.save(payment);
+
+    return {
+      paid: paymentMethod === 'wallet',
+      payment: savedPayment,
+    };
+  }
+
+  async refundBookingPayment(
+    manager: EntityManager,
+    user: User,
+    bookingId: number,
+    refundAmount: number,
+  ): Promise<Payment> {
+    const currentBalance = Number(user.balance);
+
+    if (!Number.isFinite(currentBalance) || !Number.isFinite(refundAmount)) {
+      throw new BadRequestException('Invalid balance or refund amount');
+    }
+
+    user.balance = currentBalance + refundAmount;
+    await manager.save(user);
+
+    const refundPayment = manager.create(Payment, {
+      amount: refundAmount,
+      currency: 'BRL',
+      type: 'BOOKING_REFUND',
+      status: 'COMPLETED',
+      reference: `REFUND-${bookingId}`,
+      description: `Estorno do agendamento ${bookingId}`,
+      user,
+    });
+
+    return manager.save(refundPayment);
+  }
 
   async createPayment(
     userId: number,

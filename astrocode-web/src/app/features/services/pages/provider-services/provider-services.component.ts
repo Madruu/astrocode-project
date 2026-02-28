@@ -169,7 +169,7 @@ export class ProviderServicesComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['']);
   }
 
   private resolveCategory(name: string): string {

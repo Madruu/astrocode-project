@@ -3,14 +3,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Booking } from './entities/booking/booking.entity';
 import { User } from 'src/user/entities/user/user.entity';
 import { Task } from 'src/task/entities/task/task.entity';
-import { Payment } from 'src/payment/entities/payment/payment.entity';
 import { PassportModule } from '@nestjs/passport';
 import { BookingController } from './controllers/booking/booking.controller';
 import { BookingService } from './services/booking/booking.service';
+import { PaymentModule } from 'src/payment/payment.module';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Booking, User, Task, Payment]),
+    TypeOrmModule.forFeature([Booking, User, Task]),
     PassportModule,
+    PaymentModule,
   ],
   controllers: [BookingController],
   providers: [BookingService],
