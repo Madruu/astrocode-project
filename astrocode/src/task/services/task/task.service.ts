@@ -90,7 +90,7 @@ export class TaskService {
         throw new NotFoundException('Task not found');
       }
       this.ensureTaskProviderOwnership(taskToDelete, providerId);
-      await transactionManager.delete(Task, taskToDelete);
+      await transactionManager.delete(Task, taskToDelete.id);
     });
   }
 
