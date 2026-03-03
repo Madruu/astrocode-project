@@ -51,6 +51,7 @@ export class AccountComponent {
   readonly recentTransactions$: Observable<WalletTransaction[]> = this.walletApiService
     .getTransactions$()
     .pipe(map((transactions) => transactions.slice(0, 3)));
+  isSavingProfile = false;
 
   constructor() {
     this.handlePayPalReturn();
@@ -81,8 +82,39 @@ export class AccountComponent {
     return 'Pagamento de agendamento';
   }
 
-  saveAccountChanges(): void {
-    this.snackBar.open('Perfil atualizado com sucesso.', 'Fechar', { duration: 2600 });
+  saveAccountChanges(event: Event, name: string): void {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      this.snackBar.open('Informe um nome valido.', 'Fechar', { duration: 2600 });
+      return;
+    }
+
+    this.user$.pipe(take(1)).subscribe((user) => {
+      if (!user) {
+        this.snackBar.open('Nao foi possivel identificar a conta atual.', 'Fechar', {
+          duration: 3000,
+        });
+        return;
+      }
+
+      this.isSavingProfile = true;
+      this.authService
+        .updateProfile(user.id, { name: trimmedName })
+        .pipe(take(1))
+        .subscribe({
+          next: () => {
+            this.isSavingProfile = false;
+            this.snackBar.open('Perfil atualizado com sucesso.', 'Fechar', { duration: 2600 });
+          },
+          error: (error: unknown) => {
+            this.isSavingProfile = false;
+            const message =
+              error instanceof Error ? error.message : 'Nao foi possivel atualizar o perfil.';
+            this.snackBar.open(message, 'Fechar', { duration: 3200 });
+          },
+        });
+    });
   }
 
   changePassword(): void {

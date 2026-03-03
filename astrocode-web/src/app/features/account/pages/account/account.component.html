@@ -65,19 +65,21 @@
           </header>
 
           @if (user$ | async; as user) {
-            <form class="form-grid" (ngSubmit)="saveAccountChanges()">
+            <form class="form-grid" (submit)="saveAccountChanges($event, nameInput.value)">
               <mat-form-field appearance="outline">
                 <mat-label>Nome completo</mat-label>
-                <input matInput [value]="user.name" />
+                <input matInput #nameInput [value]="user.name" />
               </mat-form-field>
 
               <mat-form-field appearance="outline">
                 <mat-label>Email</mat-label>
-                <input matInput [value]="user.email" />
+                <input matInput [value]="user.email" readonly />
                 <mat-hint>O email nao pode ser alterado</mat-hint>
               </mat-form-field>
 
-              <button class="gradient-btn" mat-flat-button type="submit">Salvar Alteracoes</button>
+              <button class="gradient-btn" mat-flat-button type="submit" [disabled]="isSavingProfile">
+                {{ isSavingProfile ? 'Salvando...' : 'Salvar Alteracoes' }}
+              </button>
             </form>
           } @else {
             <p>Nenhuma conta carregada no momento.</p>

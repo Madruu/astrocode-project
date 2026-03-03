@@ -66,8 +66,20 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    const updatePayload: UpdateUserDto = { ...user };
-    if (user.password) {
+    const updatePayload: UpdateUserDto = {};
+    if (user.name !== undefined) {
+      updatePayload.name = user.name;
+    }
+    if (user.email !== undefined) {
+      updatePayload.email = user.email;
+    }
+    if (user.accountType !== undefined) {
+      updatePayload.accountType = user.accountType;
+    }
+    if (user.cnpj !== undefined) {
+      updatePayload.cnpj = user.cnpj;
+    }
+    if (user.password !== undefined) {
       updatePayload.password = await this.hashPassword(user.password);
     }
 

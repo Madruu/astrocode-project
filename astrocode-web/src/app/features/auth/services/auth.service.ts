@@ -32,6 +32,18 @@ interface SignupPayload {
   cnpj?: string | null;
 }
 
+interface UpdateProfilePayload {
+  name?: string;
+  password?: string;
+}
+
+interface UpdateProfileResponse {
+  id: number | string;
+  name: string;
+  email: string;
+  accountType?: 'USER' | 'PROVIDER';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -107,6 +119,26 @@ export class AuthService {
 
   isAuthenticated$(): Observable<boolean> {
     return this.currentUser$.pipe(map((user) => !!user));
+  }
+
+  updateProfile(
+    userId: string | number,
+    payload: UpdateProfilePayload
+  ): Observable<AuthUser> {
+    return this.http
+      .put<UpdateProfileResponse>(buildApiUrl(`/user/${userId}`), payload)
+      .pipe(
+        map((response) => ({
+          id: String(response.id),
+          name: response.name ?? this.currentUserSubject.value?.name ?? '',
+          email: response.email ?? this.currentUserSubject.value?.email ?? '',
+          accountType: response.accountType ?? this.currentUserSubject.value?.accountType,
+        })),
+        tap((updatedUser) => {
+          localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
+          this.currentUserSubject.next(updatedUser);
+        })
+      );
   }
 
   private readUserFromStorage(): AuthUser | null {
