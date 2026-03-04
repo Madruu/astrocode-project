@@ -34,6 +34,12 @@ export interface CancelApiBookingInput {
   reason: string;
 }
 
+export interface BlockApiBookingInput {
+  taskId: number;
+  scheduledDate: string;
+  reason?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -50,5 +56,18 @@ export class BookingApiService {
 
   cancelBooking$(input: CancelApiBookingInput): Observable<ApiBooking> {
     return this.http.post<ApiBooking>(buildApiUrl('/booking/cancel'), input);
+  }
+
+  blockSlot$(input: BlockApiBookingInput): Observable<ApiBooking> {
+    return this.http.post<ApiBooking>(buildApiUrl('/booking/block'), input);
+  }
+
+  getAvailableSlots$(taskId: number, date: string): Observable<string[]> {
+    return this.http.get<string[]>(buildApiUrl('/booking/available-slots'), {
+      params: {
+        taskId: String(taskId),
+        date,
+      },
+    });
   }
 }

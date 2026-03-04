@@ -9,10 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { catchError, map, of, startWith, switchMap, take } from 'rxjs';
+import { catchError, combineLatest, map, of, startWith, switchMap, take } from 'rxjs';
 
 import { Booking } from '../../../../core/services/booking.service';
-import { ApiBooking, BookingApiService } from '../../../../core/services/booking-api.service';
+import { BookingApiService } from '../../../../core/services/booking-api.service';
 import { ProviderTask, ProviderTaskApiService } from '../../../../core/services/provider-task-api.service';
 import { ScheduleService } from '../../../../core/services/schedule.service';
 import { WalletApiService } from '../../../../core/services/wallet-api.service';
@@ -66,21 +66,19 @@ export class NewBookingDialogComponent {
   });
 
   readonly serviceOptions$ = this.providerTaskApiService.getProviderTasks$().pipe(catchError(() => of([])));
-  readonly availableSlots$ = this.form.controls.date.valueChanges.pipe(
-    startWith(this.form.controls.date.value),
-    map((dateValue) => this.parseInputDate(dateValue)),
-    switchMap((date) => {
-      if (!date) {
+  readonly availableSlots$ = combineLatest([
+    this.form.controls.date.valueChanges.pipe(startWith(this.form.controls.date.value)),
+    this.form.controls.serviceId.valueChanges.pipe(startWith(this.form.controls.serviceId.value)),
+  ]).pipe(
+    map(([dateValue, serviceIdValue]) => ({
+      date: this.parseInputDate(dateValue),
+      taskId: Number(serviceIdValue),
+    })),
+    switchMap(({ date, taskId }) => {
+      if (!date || !Number.isInteger(taskId)) {
         return of([] as SlotOption[]);
       }
-
-      const fallbackBookedSlots = this.getBookedSlotsFromUi(date, this.data.bookings);
-
-      return this.bookingApiService.getBookings$().pipe(
-        map((bookings) => this.getBookedSlotsFromApi(date, bookings)),
-        map((bookedSlots) => (bookedSlots.length > 0 ? bookedSlots : fallbackBookedSlots)),
-        catchError(() => of(fallbackBookedSlots)),
-        switchMap((bookedSlots) => this.scheduleService.getAvailableSlots$(date, bookedSlots)),
+      return this.scheduleService.getAvailableSlots$(taskId, date).pipe(
         map((slots) =>
           slots.map((slotIso) => ({
             iso: slotIso,
@@ -89,7 +87,8 @@ export class NewBookingDialogComponent {
         ),
         catchError(() => of([]))
       );
-    })
+    }),
+    catchError(() => of([]))
   );
 
   loading = false;
@@ -265,25 +264,4 @@ export class NewBookingDialogComponent {
     return date;
   }
 
-  private isSameDay(a: Date, b: Date): boolean {
-    return (
-      a.getDate() === b.getDate() &&
-      a.getMonth() === b.getMonth() &&
-      a.getFullYear() === b.getFullYear()
-    );
-  }
-
-  private getBookedSlotsFromUi(date: Date, bookings: Booking[]): string[] {
-    return bookings
-      .filter((booking) => booking.status !== 'cancelled')
-      .filter((booking) => this.isSameDay(new Date(booking.startAt), date))
-      .map((booking) => booking.startAt);
-  }
-
-  private getBookedSlotsFromApi(date: Date, bookings: ApiBooking[]): string[] {
-    return bookings
-      .filter((booking) => booking.status?.toLowerCase() !== 'cancelled')
-      .filter((booking) => this.isSameDay(new Date(booking.scheduledDate), date))
-      .map((booking) => booking.scheduledDate);
-  }
 }

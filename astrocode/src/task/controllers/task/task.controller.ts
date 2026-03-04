@@ -47,9 +47,14 @@ export class TaskController {
   @HttpCode(200)
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get all tasks' })
-  findAll(): Promise<Task[]> {
+  findAll(
+    @Req() req: Request & { user: { userId: number; accountType: string } },
+  ): Promise<Task[]> {
     try {
-      return this.taskService.findAllTasks();
+      return this.taskService.findAllTasks(
+        req.user.userId,
+        req.user.accountType,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }

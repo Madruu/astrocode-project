@@ -11,7 +11,7 @@ export interface ServiceOption {
   price: number;
 }
 
-export type BookingStatus = 'booked' | 'confirmed' | 'cancelled';
+export type BookingStatus = 'booked' | 'confirmed' | 'cancelled' | 'blocked';
 
 export interface Booking {
   id: string;
@@ -177,6 +177,8 @@ export class BookingService {
         ? 'cancelled'
         : normalizedStatus === 'booked'
           ? 'booked'
+          : normalizedStatus === 'blocked'
+            ? 'blocked'
           : 'confirmed';
     const isCancelled = uiStatus === 'cancelled';
     return {

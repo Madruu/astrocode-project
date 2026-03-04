@@ -2,7 +2,7 @@ import { Task } from 'src/task/entities/task/task.entity';
 import { User } from 'src/user/entities/user/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-export type BookingStatus = 'BOOKED' | 'CONFIRMED' | 'CANCELLED';
+export type BookingStatus = 'BOOKED' | 'CONFIRMED' | 'CANCELLED' | 'BLOCKED';
 
 @Entity({ name: 'bookings' })
 export class Booking {

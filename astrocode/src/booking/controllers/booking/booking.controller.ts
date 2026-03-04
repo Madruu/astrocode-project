@@ -7,10 +7,13 @@ import {
   Req,
   BadRequestException,
   Get,
+  Query,
 } from '@nestjs/common';
 import {
+  BlockBookingSlotDto,
   CancelBookingDto,
   CreateBookingDto,
+  GetAvailableSlotsQueryDto,
 } from 'src/booking/dto/booking/create-booking/create-booking.dto';
 import { Booking } from 'src/booking/entities/booking/booking.entity';
 import { BookingService } from 'src/booking/services/booking/booking.service';
@@ -72,6 +75,39 @@ export class BookingController {
         req.user.userId,
         req.user.accountType,
       );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Post('block')
+  @HttpCode(201)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Block a task slot as provider account' })
+  blockSlot(
+    @Req() req: Request & { user: { userId: number; accountType?: string } },
+    @Body() blockSlotDto: BlockBookingSlotDto,
+  ): Promise<Booking> {
+    try {
+      return this.bookingService.blockBookingSlot(
+        blockSlotDto,
+        req.user.userId,
+        req.user.accountType,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Get('available-slots')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Get available slots for a task by day' })
+  getAvailableSlots(
+    @Query() query: GetAvailableSlotsQueryDto,
+  ): Promise<string[]> {
+    try {
+      return this.bookingService.getAvailableSlots(query.taskId, query.date);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

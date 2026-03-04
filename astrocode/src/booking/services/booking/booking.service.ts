@@ -5,10 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, In, Not, Repository } from 'typeorm';
 import { Booking } from 'src/booking/entities/booking/booking.entity';
 import { DataSource } from 'typeorm';
-import { CreateBookingDto } from 'src/booking/dto/booking/create-booking/create-booking.dto';
+import {
+  BlockBookingSlotDto,
+  CreateBookingDto,
+} from 'src/booking/dto/booking/create-booking/create-booking.dto';
 import { Task } from 'src/task/entities/task/task.entity';
 import { User } from 'src/user/entities/user/user.entity';
 import { CancelBookingDto } from 'src/booking/dto/booking/create-booking/create-booking.dto';
@@ -96,7 +99,7 @@ export class BookingService {
       where:
         accountType === 'PROVIDER'
           ? { task: { provider: { id: userId } } }
-          : { user: { id: userId } },
+          : { user: { id: userId }, status: Not('BLOCKED') },
       relations: ['user', 'task', 'task.provider'],
     });
     if (!foundBookings) {
@@ -128,16 +131,29 @@ export class BookingService {
       if (normalizedStatus === 'CANCELLED') {
         throw new BadRequestException('Booking already cancelled');
       }
-      if (bookingToCancel.scheduledDate.getTime() <= Date.now()) {
-        throw new BadRequestException(
-          'Past bookings cannot be cancelled anymore',
-        );
-      }
 
       const isBookingOwner = bookingToCancel.user.id === requesterUserId;
       const isProviderOwner =
         requesterAccountType === 'PROVIDER' &&
         bookingToCancel.task.provider?.id === requesterUserId;
+
+      if (normalizedStatus === 'BLOCKED') {
+        if (!isProviderOwner) {
+          throw new ForbiddenException(
+            'Only the provider owner can unblock this slot',
+          );
+        }
+        bookingToCancel.status = 'CANCELLED';
+        bookingToCancel.paid = false;
+        await manager.save(bookingToCancel);
+        return bookingToCancel;
+      }
+
+      if (bookingToCancel.scheduledDate.getTime() <= Date.now()) {
+        throw new BadRequestException(
+          'Past bookings cannot be cancelled anymore',
+        );
+      }
       if (!isBookingOwner && !isProviderOwner) {
         throw new ForbiddenException(
           'You do not have permission to cancel this booking',
@@ -190,5 +206,99 @@ export class BookingService {
       await manager.save(bookingToCancel);
       return bookingToCancel;
     });
+  }
+
+  async blockBookingSlot(
+    blockSlotDto: BlockBookingSlotDto,
+    requesterUserId: number,
+    requesterAccountType?: string,
+  ): Promise<Booking> {
+    if (requesterAccountType !== 'PROVIDER') {
+      throw new ForbiddenException('Only provider users can block slots');
+    }
+
+    const scheduledDate = new Date(blockSlotDto.scheduledDate);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+      throw new BadRequestException('Invalid or past date');
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const task = await manager.findOne(Task, {
+        where: { id: blockSlotDto.taskId },
+        relations: ['provider'],
+      });
+      if (!task) {
+        throw new NotFoundException('Task not found');
+      }
+      if (!task.provider || task.provider.id !== requesterUserId) {
+        throw new ForbiddenException(
+          'You do not have permission to block this task slot',
+        );
+      }
+
+      const existingBooking = await manager.findOne(Booking, {
+        where: {
+          task: { id: task.id },
+          scheduledDate,
+          status: In(['BOOKED', 'CONFIRMED', 'BLOCKED']),
+        },
+      });
+      if (existingBooking) {
+        throw new BadRequestException('Time slot already unavailable');
+      }
+
+      const blockedBooking = manager.create(Booking, {
+        user: task.provider,
+        task,
+        scheduledDate,
+        status: 'BLOCKED',
+        paid: false,
+      });
+      return manager.save(blockedBooking);
+    });
+  }
+
+  async getAvailableSlots(taskId: number, date: string): Promise<string[]> {
+    const task = await this.taskRepository.findOne({
+      where: { id: taskId },
+    });
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    const dayStart = new Date(`${date}T00:00:00`);
+    if (isNaN(dayStart.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
+    const dayEnd = new Date(dayStart);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const takenBookings = await this.bookingRepository.find({
+      where: {
+        task: { id: taskId },
+        scheduledDate: Between(dayStart, dayEnd),
+        status: In(['BOOKED', 'CONFIRMED', 'BLOCKED']),
+      },
+      select: ['scheduledDate'],
+    });
+
+    const takenSlots = new Set(
+      takenBookings.map((booking) => booking.scheduledDate.toISOString()),
+    );
+
+    const slots: string[] = [];
+    for (let hour = 8; hour <= 18; hour += 1) {
+      const slot = new Date(dayStart);
+      slot.setHours(hour, 0, 0, 0);
+      if (slot.getTime() <= Date.now()) {
+        continue;
+      }
+      const slotIso = slot.toISOString();
+      if (!takenSlots.has(slotIso)) {
+        slots.push(slotIso);
+      }
+    }
+
+    return slots;
   }
 }

@@ -21,8 +21,23 @@ export class TaskService {
     private dataSource: DataSource,
   ) {}
 
-  async findAllTasks(): Promise<Task[]> {
-    return this.taskRepository.find({ relations: ['provider'] });
+  async findAllTasks(
+    requesterUserId: number,
+    requesterAccountType: string,
+  ): Promise<Task[]> {
+    if (requesterAccountType === 'PROVIDER') {
+      return this.taskRepository.find({
+        where: { provider: { id: requesterUserId } },
+        relations: ['provider'],
+      });
+    }
+
+    return this.taskRepository
+      .createQueryBuilder('task')
+      .innerJoinAndSelect('task.provider', 'provider')
+      .where('provider.accountType = :accountType', { accountType: 'PROVIDER' })
+      .orderBy('task.id', 'DESC')
+      .getMany();
   }
 
   async findTaskById(id: number): Promise<Task | null> {

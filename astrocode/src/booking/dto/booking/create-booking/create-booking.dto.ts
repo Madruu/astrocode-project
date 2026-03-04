@@ -3,7 +3,9 @@ import {
   IsDateString,
   IsIn,
   IsInt,
+  Matches,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -43,4 +45,34 @@ export class CancelBookingDto {
   @IsNotEmpty()
   @IsString()
   reason: string;
+}
+
+export class BlockBookingSlotDto {
+  @ApiProperty({ description: 'The task id' })
+  @IsNotEmpty()
+  @IsInt()
+  taskId: number;
+
+  @ApiProperty({ description: 'The slot to block' })
+  @IsNotEmpty()
+  @IsDateString()
+  scheduledDate: string;
+
+  @ApiProperty({ description: 'Optional reason for slot blocking', required: false })
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
+
+export class GetAvailableSlotsQueryDto {
+  @ApiProperty({ description: 'The task id' })
+  @IsNotEmpty()
+  @IsInt()
+  taskId: number;
+
+  @ApiProperty({ description: 'Date in YYYY-MM-DD format' })
+  @IsNotEmpty()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  date: string;
 }
