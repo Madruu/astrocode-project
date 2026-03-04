@@ -70,10 +70,6 @@ Then edit `.env` with your values.
 | `PAYPAL_NOTIFICATION_URL` | Optional | Public webhook URL for PayPal notifications |
 | `PAYPAL_WEBHOOK_ID` | Optional | Enables webhook signature verification when set |
 
-### Legacy Mercado Pago variables still referenced
-
-The code still reads `MP_FRONTEND_URL` for CORS and PayPal URL fallback. Keep this set if you rely on older setup values.
-
 ### Run backend
 
 ```bash
