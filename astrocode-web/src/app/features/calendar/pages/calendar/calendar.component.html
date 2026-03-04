@@ -149,7 +149,11 @@
         </div>
         <div>
           <strong class="purple">{{ monthSummary().totalSpent | currency: 'BRL' }}</strong>
-          <span>Total Gasto</span>
+          @if ((user$ | async)?.accountType === 'PROVIDER') {
+            <span>Total ganho</span>
+          } @else {
+            <span>Total Gasto</span>
+          }
         </div>
       </div>
     </mat-card>

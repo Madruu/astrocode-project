@@ -46,7 +46,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Horario disponivel</mat-label>
-      <mat-select formControlName="slot" [disabled]="!form.controls.date.value">
+      <mat-select formControlName="slot" [disabled]="!form.controls.date.value || !form.controls.serviceId.value">
         @if (availableSlots$ | async; as slots) {
           @for (slot of slots; track slot.iso) {
             <mat-option [value]="slot.iso">{{ slot.label }}</mat-option>

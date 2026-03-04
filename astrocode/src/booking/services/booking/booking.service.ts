@@ -88,6 +88,7 @@ export class BookingService {
         task,
         status: paid ? 'CONFIRMED' : 'BOOKED',
         paid,
+        paymentSource: 'wallet',
       });
 
       return manager.save(newBooking);
@@ -197,7 +198,7 @@ export class BookingService {
         await this.paymentService.refundBookingPayment(
           manager,
           user,
-          bookingToCancel.id,
+          bookingToCancel,
           refundAmount,
         );
       }
@@ -266,7 +267,12 @@ export class BookingService {
       throw new NotFoundException('Task not found');
     }
 
-    const dayStart = new Date(`${date}T00:00:00`);
+    const isDdMmYyyy = /^\d{2}\/\d{2}\/\d{4}$/.test(date);
+    const parts = date.split(isDdMmYyyy ? '/' : '-').map(Number);
+    const [year, month, day] = isDdMmYyyy
+      ? [parts[2], parts[1], parts[0]] // DD/MM/YYYY -> year, month, day
+      : [parts[0], parts[1], parts[2]]; // YYYY-MM-DD
+    const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0);
     if (isNaN(dayStart.getTime())) {
       throw new BadRequestException('Invalid date format');
     }
@@ -287,12 +293,9 @@ export class BookingService {
     );
 
     const slots: string[] = [];
-    for (let hour = 8; hour <= 18; hour += 1) {
+    for (let hour = 8; hour <= 20; hour += 1) {
       const slot = new Date(dayStart);
       slot.setHours(hour, 0, 0, 0);
-      if (slot.getTime() <= Date.now()) {
-        continue;
-      }
       const slotIso = slot.toISOString();
       if (!takenSlots.has(slotIso)) {
         slots.push(slotIso);

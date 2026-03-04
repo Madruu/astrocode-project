@@ -8,6 +8,7 @@ export interface AuthUser {
   name: string;
   email: string;
   accountType?: 'USER' | 'PROVIDER';
+  password: string;
 }
 
 interface LoginResponse {
@@ -16,6 +17,7 @@ interface LoginResponse {
   email?: string;
   token: string;
   accountType: 'USER' | 'PROVIDER';
+  password: string;
 }
 
 interface SignupResponse {
@@ -42,6 +44,7 @@ interface UpdateProfileResponse {
   name: string;
   email: string;
   accountType?: 'USER' | 'PROVIDER';
+  password: string;
 }
 
 @Injectable({
@@ -103,6 +106,7 @@ export class AuthService {
           name: response.name,
           email: response.email,
           accountType: response.accountType ?? credentials.accountType,
+          password: credentials.password,
         }))
       );
   }
@@ -133,6 +137,7 @@ export class AuthService {
           name: response.name ?? this.currentUserSubject.value?.name ?? '',
           email: response.email ?? this.currentUserSubject.value?.email ?? '',
           accountType: response.accountType ?? this.currentUserSubject.value?.accountType,
+          password: response.password ?? this.currentUserSubject.value?.password
         })),
         tap((updatedUser) => {
           localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
@@ -169,6 +174,7 @@ export class AuthService {
       name: response.user,
       email: response.email ?? email,
       accountType: response.accountType,
+      password: response.password ?? '',
     };
   }
 

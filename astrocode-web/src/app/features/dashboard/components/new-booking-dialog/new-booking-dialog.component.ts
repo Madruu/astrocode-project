@@ -9,7 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { catchError, combineLatest, map, of, startWith, switchMap, take } from 'rxjs';
+import { catchError, combineLatest, debounceTime, map, merge, of, startWith, switchMap, take, timer } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { Booking } from '../../../../core/services/booking.service';
 import { BookingApiService } from '../../../../core/services/booking-api.service';
@@ -67,15 +68,21 @@ export class NewBookingDialogComponent {
 
   readonly serviceOptions$ = this.providerTaskApiService.getProviderTasks$().pipe(catchError(() => of([])));
   readonly availableSlots$ = combineLatest([
-    this.form.controls.date.valueChanges.pipe(startWith(this.form.controls.date.value)),
-    this.form.controls.serviceId.valueChanges.pipe(startWith(this.form.controls.serviceId.value)),
+    this.form.controls.date.valueChanges.pipe(
+      startWith(this.form.controls.date.value),
+      debounceTime(300),
+    ),
+    merge(
+      this.form.controls.serviceId.valueChanges.pipe(startWith(this.form.controls.serviceId.value)),
+      timer(100).pipe(map(() => this.form.getRawValue().serviceId)),
+    ),
   ]).pipe(
     map(([dateValue, serviceIdValue]) => ({
       date: this.parseInputDate(dateValue),
       taskId: Number(serviceIdValue),
     })),
     switchMap(({ date, taskId }) => {
-      if (!date || !Number.isInteger(taskId)) {
+      if (!date || !Number.isInteger(taskId) || taskId <= 0) {
         return of([] as SlotOption[]);
       }
       return this.scheduleService.getAvailableSlots$(taskId, date).pipe(
@@ -85,7 +92,6 @@ export class NewBookingDialogComponent {
             label: this.datePipe.transform(slotIso, 'HH:mm') ?? '',
           }))
         ),
-        catchError(() => of([]))
       );
     }),
     catchError(() => of([]))
@@ -134,7 +140,7 @@ export class NewBookingDialogComponent {
     }
 
     if (raw.paymentMethod === 'direct') {
-      this.redirectDirectPaymentToPayPal(parsedTaskId);
+      this.redirectDirectPaymentToPayPal(parsedTaskId, parsedUserId, raw.slot);
       return;
     }
 
@@ -194,7 +200,11 @@ export class NewBookingDialogComponent {
       });
   }
 
-  private redirectDirectPaymentToPayPal(taskId: number): void {
+  private redirectDirectPaymentToPayPal(
+    taskId: number,
+    userId: number,
+    scheduledDate: string
+  ): void {
     this.loading = true;
     this.providerTaskApiService
       .getProviderTasks$()
@@ -210,9 +220,20 @@ export class NewBookingDialogComponent {
             });
             return;
           }
+          if (!scheduledDate || scheduledDate.trim().length === 0) {
+            this.loading = false;
+            this.snackBar.open('Selecione data e horario antes de pagar.', 'Fechar', {
+              duration: 3500,
+            });
+            return;
+          }
 
           this.walletApiService
-            .createPayPalCheckout$(amount, 'external_payment')
+            .createPayPalCheckout$(amount, 'external_payment', {
+              taskId,
+              userId,
+              scheduledDate,
+            })
             .pipe(take(1), takeUntilDestroyed(this.destroyRef))
             .subscribe({
               next: (checkout) => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, catchError, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BookingApiService } from './booking-api.service';
 
 @Injectable({
@@ -10,7 +10,7 @@ export class ScheduleService {
 
   getAvailableSlots$(taskId: number, date: Date): Observable<string[]> {
     const day = this.toDateKey(date);
-    return this.bookingApiService.getAvailableSlots$(taskId, day).pipe(catchError(() => of([])));
+    return this.bookingApiService.getAvailableSlots$(taskId, day);
   }
 
   private toDateKey(date: Date): string {

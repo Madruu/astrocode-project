@@ -51,9 +51,12 @@ export class DashboardComponent implements OnDestroy {
   readonly upcomingCount$ = this.upcomingBookings$.pipe(map((bookings) => bookings.length));
   readonly nextBooking$ = this.upcomingBookings$.pipe(map((bookings) => bookings[0] ?? null));
   readonly pendingPayments$ = this.upcomingBookings$.pipe(
-    map((bookings) => ({
-      count: bookings.length,
-      amount: bookings.reduce((total, booking) => total + booking.amount, 0),
+    map((bookings) =>
+      bookings.filter((booking) => !booking.paymentTransactionId)
+    ),
+    map((unpaidBookings) => ({
+      count: unpaidBookings.length,
+      amount: unpaidBookings.reduce((total, booking) => total + booking.amount, 0),
     }))
   );
   readonly pendingCount$ = this.pendingPayments$.pipe(map((pending) => pending.count));

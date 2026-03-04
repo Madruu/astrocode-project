@@ -52,6 +52,7 @@ export class AccountComponent {
     .getTransactions$()
     .pipe(map((transactions) => transactions.slice(0, 3)));
   isSavingProfile = false;
+  isChangingPassword = false;
 
   constructor() {
     this.handlePayPalReturn();
@@ -117,9 +118,60 @@ export class AccountComponent {
     });
   }
 
-  changePassword(): void {
-    this.snackBar.open('Alteracao de senha ainda sera integrada ao backend.', 'Fechar', {
-      duration: 3200,
+  changePassword(event: Event, currentPassword: string, newPassword: string, confirmPassword: string): void {
+    event.preventDefault();
+    const trimmedCurrentPassword = currentPassword.trim();
+    if (!trimmedCurrentPassword) {
+      this.snackBar.open('Informe a senha atual.', 'Fechar', { duration: 2600 });
+      return;
+    }
+    const trimmedNewPassword = newPassword.trim();
+    if (!trimmedNewPassword) {
+      this.snackBar.open('Informe a nova senha.', 'Fechar', { duration: 2600 });
+      return;
+    }
+    if (trimmedNewPassword.length < 6) {
+      this.snackBar.open('A nova senha deve ter no mínimo 6 caracteres.', 'Fechar', { duration: 2600 });
+      return;
+    }
+    const trimmedConfirmPassword = confirmPassword.trim();
+    if (!trimmedConfirmPassword) {
+      this.snackBar.open('Informe a confirmação da nova senha.', 'Fechar', { duration: 2600 });
+      return;
+    }
+    if (trimmedNewPassword !== trimmedConfirmPassword) {
+      this.snackBar.open('As senhas não coincidem.', 'Fechar', { duration: 2600 });
+      return;
+    }
+    if (trimmedNewPassword === trimmedCurrentPassword) {
+      this.snackBar.open('Sua nova senha não pode ser igual à antiga.', 'Fechar', { duration: 2600 });
+      return;
+    }
+
+    this.user$.pipe(take(1)).subscribe((user) => {
+      if (!user) {
+        this.snackBar.open('Nao foi possivel identificar a conta atual.', 'Fechar', {
+          duration: 3000,
+        });
+        return;
+      }
+
+      this.isChangingPassword = true;
+      this.authService
+        .updateProfile(user.id, { password: trimmedNewPassword })
+        .pipe(take(1))
+        .subscribe({
+          next: () => {
+            this.isChangingPassword = false;
+            this.snackBar.open('Senha alterada com sucesso.', 'Fechar', { duration: 2600 });
+          },
+          error: (error: unknown) => {
+            this.isChangingPassword = false;
+            const message =
+              error instanceof Error ? error.message : 'Nao foi possivel alterar a senha.';
+            this.snackBar.open(message, 'Fechar', { duration: 3200 });
+          },
+        });
     });
   }
 
@@ -171,7 +223,8 @@ export class AccountComponent {
     this.route.queryParamMap
       .pipe(take(1))
       .subscribe((params) => {
-        if (params.get('source') !== 'paypal') {
+        const source = params.get('source');
+        if (source !== 'paypal' && source !== 'paypal_external') {
           return;
         }
 
@@ -186,7 +239,7 @@ export class AccountComponent {
         });
 
         if (!orderId) {
-          this.snackBar.open('Pagamento nao aprovado. Seu saldo nao foi alterado.', 'Fechar', {
+          this.snackBar.open('Pagamento nao aprovado.', 'Fechar', {
             duration: 3500,
           });
           this.walletApiService.refresh();
@@ -200,10 +253,18 @@ export class AccountComponent {
             next: (transaction) => {
               this.walletApiService.refresh();
               if (transaction.status === 'COMPLETED') {
-                this.snackBar.open('Deposito confirmado com sucesso!', 'Fechar', { duration: 3000 });
+                const isBooking =
+                  transaction.type === 'BOOKING_CHARGE';
+                this.snackBar.open(
+                  isBooking
+                    ? 'Agendamento e pagamento confirmados com sucesso!'
+                    : 'Deposito confirmado com sucesso!',
+                  'Fechar',
+                  { duration: 3000 }
+                );
                 return;
               }
-              this.snackBar.open('Pagamento nao aprovado. Seu saldo nao foi alterado.', 'Fechar', {
+              this.snackBar.open('Pagamento nao aprovado.', 'Fechar', {
                 duration: 3500,
               });
             },

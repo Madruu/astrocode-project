@@ -26,6 +26,30 @@ export class CreatePayPalCheckoutDto {
   @IsString()
   @IsIn(['wallet_deposit', 'external_payment'])
   purpose?: 'wallet_deposit' | 'external_payment';
+
+  @ApiProperty({
+    description: 'Task ID for external_payment (booking checkout)',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  taskId?: number;
+
+  @ApiProperty({
+    description: 'User ID for external_payment (booking checkout)',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  userId?: number;
+
+  @ApiProperty({
+    description: 'Scheduled date ISO string for external_payment (booking checkout)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  scheduledDate?: string;
 }
 
 export interface CreatePayPalCheckoutResponse {

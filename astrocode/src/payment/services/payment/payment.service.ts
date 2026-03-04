@@ -61,7 +61,8 @@ export class PaymentService {
       | 'capture_order'
       | 'verify_webhook'
       | 'fetch_order'
-      | 'fetch_capture',
+      | 'fetch_capture'
+      | 'refund_capture',
     context: Record<string, unknown>,
     error: unknown,
   ): void {
@@ -189,6 +190,28 @@ export class PaymentService {
     return { paymentRecordId, paymentUserId };
   }
 
+  private parseExternalPaymentReference(externalReference: string): {
+    taskId: number;
+    userId: number;
+    scheduledDate: string;
+  } {
+    const referenceParts = externalReference.split(':');
+    if (referenceParts[0] !== 'external_payment' || referenceParts.length < 5) {
+      throw new BadRequestException('Invalid external payment reference');
+    }
+    const taskId = Number(referenceParts[1]);
+    const userId = Number(referenceParts[2]);
+    const scheduledDate = referenceParts.slice(3, -1).join(':');
+    if (
+      !Number.isInteger(taskId) ||
+      !Number.isInteger(userId) ||
+      !scheduledDate
+    ) {
+      throw new BadRequestException('Invalid external payment reference');
+    }
+    return { taskId, userId, scheduledDate };
+  }
+
   private async createPayPalAccessToken(): Promise<string> {
     const { clientId, clientSecret } = this.getPayPalCredentials();
     const baseUrl = this.getPayPalApiBaseUrl();
@@ -226,7 +249,8 @@ export class PaymentService {
       | 'capture_order'
       | 'verify_webhook'
       | 'fetch_order'
-      | 'fetch_capture',
+      | 'fetch_capture'
+      | 'refund_capture',
     context: Record<string, unknown>,
   ): Promise<T> {
     const baseUrl = this.getPayPalApiBaseUrl();
@@ -499,13 +523,34 @@ export class PaymentService {
   async refundBookingPayment(
     manager: EntityManager,
     user: User,
-    bookingId: number,
+    booking: Booking,
     refundAmount: number,
   ): Promise<Payment> {
-    const currentBalance = Number(user.balance);
+    if (!Number.isFinite(refundAmount)) {
+      throw new BadRequestException('Invalid refund amount');
+    }
 
-    if (!Number.isFinite(currentBalance) || !Number.isFinite(refundAmount)) {
-      throw new BadRequestException('Invalid balance or refund amount');
+    const bookingId = booking.id;
+    const paymentSource = booking.paymentSource ?? 'wallet';
+    const payPalCaptureId = booking.payPalCaptureId;
+
+    if (paymentSource === 'paypal' && payPalCaptureId) {
+      await this.refundPayPalCapture(payPalCaptureId, refundAmount, bookingId);
+      const refundPayment = manager.create(Payment, {
+        amount: refundAmount,
+        currency: 'BRL',
+        type: 'BOOKING_REFUND',
+        status: 'COMPLETED',
+        reference: `REFUND-${bookingId}`,
+        description: `Estorno do agendamento ${bookingId} (PayPal)`,
+        user,
+      });
+      return manager.save(refundPayment);
+    }
+
+    const currentBalance = Number(user.balance);
+    if (!Number.isFinite(currentBalance)) {
+      throw new BadRequestException('Invalid balance');
     }
 
     user.balance = currentBalance + refundAmount;
@@ -522,6 +567,29 @@ export class PaymentService {
     });
 
     return manager.save(refundPayment);
+  }
+
+  private async refundPayPalCapture(
+    captureId: string,
+    amount: number,
+    bookingId: number,
+  ): Promise<void> {
+    this.getPayPalCredentials();
+    await this.payPalRequest<{ id?: string; status?: string }>(
+      `/v2/payments/captures/${encodeURIComponent(captureId)}/refund`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: {
+            currency_code: 'BRL',
+            value: amount.toFixed(2),
+          },
+          note_to_payer: `Estorno do agendamento ${bookingId}`,
+        }),
+      },
+      'refund_capture',
+      { captureId, bookingId },
+    );
   }
 
   async createPayment(
@@ -646,6 +714,19 @@ export class PaymentService {
     const purpose = input.purpose ?? 'wallet_deposit';
     const currency = input.currency?.trim().toUpperCase() || 'BRL';
     const isWalletDeposit = purpose === 'wallet_deposit';
+    const isExternalPayment =
+      purpose === 'external_payment' &&
+      Number.isInteger(input.taskId) &&
+      Number.isInteger(input.userId) &&
+      typeof input.scheduledDate === 'string' &&
+      input.scheduledDate.trim().length > 0;
+
+    if (purpose === 'external_payment' && !isExternalPayment) {
+      throw new BadRequestException(
+        'external_payment requires taskId, userId, and scheduledDate',
+      );
+    }
+
     const paymentRecord = isWalletDeposit
       ? await this.paymentRepository.save(
           this.paymentRepository.create({
@@ -661,13 +742,13 @@ export class PaymentService {
       : null;
 
     const redirectConfig = this.buildPayPalCheckoutRedirectConfigWithSource(
-      isWalletDeposit ? 'paypal' : 'paypal_external',
+      'paypal',
     );
     const notificationUrl =
       this.configService.get<string>('PAYPAL_NOTIFICATION_URL') ?? undefined;
     const externalReference = isWalletDeposit
       ? `wallet_deposit:${paymentRecord?.id}:user:${user.id}`
-      : `external_payment:user:${user.id}:ts:${Date.now()}`;
+      : `external_payment:${input.taskId}:${input.userId}:${input.scheduledDate!.trim()}:${Date.now()}`;
 
     const createOrderResponse = await this.payPalRequest<{
       id?: string;
@@ -793,12 +874,35 @@ export class PaymentService {
     }
 
     const status = (capture?.status ?? captureResponse.status)?.toLowerCase();
-    let parsedReference = externalReference
-      ? this.parsePayPalExternalReference(externalReference)
-      : null;
 
+    if (status !== 'completed') {
+      throw new BadRequestException(
+        `PayPal payment is not completed (status: ${status ?? 'unknown'})`,
+      );
+    }
+
+    if (!externalReference) {
+      throw new BadRequestException(
+        'Unable to confirm payment without external reference',
+      );
+    }
+
+    if (externalReference.startsWith('external_payment:')) {
+      return this.finalizeExternalPaymentPayPal(
+        userId,
+        externalReference,
+        capture?.id ?? captureResponse.id,
+      );
+    }
+
+    let parsedReference: { paymentRecordId: number; paymentUserId: number } | null =
+      null;
+    try {
+      parsedReference = this.parsePayPalExternalReference(externalReference);
+    } catch {
+      // Fallback when custom_id format differs or is not echoed in capture payload
+    }
     if (!parsedReference) {
-      // Fallback for integrations where custom_id is not echoed in capture payload.
       const paymentByOrderId = await this.paymentRepository.findOne({
         where: {
           reference: input.orderId,
@@ -814,21 +918,6 @@ export class PaymentService {
         };
       }
     }
-
-    if (status !== 'completed') {
-      if (status && !this.isPayPalPendingStatus(status) && parsedReference) {
-        await this.finalizeFailedPayPalPayment(
-          parsedReference.paymentRecordId,
-          userId,
-          status,
-          capture?.id ?? captureResponse.id,
-        );
-      }
-      throw new BadRequestException(
-        `PayPal payment is not completed (status: ${status ?? 'unknown'})`,
-      );
-    }
-
     if (!parsedReference) {
       throw new BadRequestException(
         'Unable to confirm payment without external reference',
@@ -847,6 +936,81 @@ export class PaymentService {
       userId,
       capture?.id ?? captureResponse.id,
     );
+  }
+
+  private async finalizeExternalPaymentPayPal(
+    requesterUserId: number,
+    externalReference: string,
+    payPalCaptureId?: string,
+  ): Promise<Payment> {
+    const { taskId, userId, scheduledDate } =
+      this.parseExternalPaymentReference(externalReference);
+
+    if (userId !== requesterUserId) {
+      throw new BadRequestException(
+        'Payment does not belong to authenticated user',
+      );
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(User, {
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const task = await manager.findOne(Task, {
+        where: { id: taskId },
+      });
+      if (!task) {
+        throw new NotFoundException('Task not found');
+      }
+
+      const scheduledDateObj = new Date(scheduledDate);
+      if (isNaN(scheduledDateObj.getTime()) || scheduledDateObj <= new Date()) {
+        throw new BadRequestException('Invalid or past scheduled date');
+      }
+
+      const existingBooking = await manager.findOne(Booking, {
+        where: {
+          task: { id: task.id },
+          scheduledDate: scheduledDateObj,
+        },
+      });
+      if (existingBooking) {
+        throw new BadRequestException('Time slot already booked');
+      }
+
+      const taskPrice = Number(task.price);
+      if (!Number.isFinite(taskPrice) || taskPrice <= 0) {
+        throw new BadRequestException('Invalid task price');
+      }
+
+      const payment = manager.create(Payment, {
+        amount: taskPrice,
+        currency: 'BRL',
+        type: 'BOOKING_CHARGE',
+        status: 'COMPLETED',
+        reference: payPalCaptureId ?? `PAYPAL-${taskId}-${Date.now()}`,
+        description: `Pagamento do agendamento para ${task.title} via PayPal`,
+        user,
+      });
+      await manager.save(payment);
+
+      const booking = manager.create(Booking, {
+        scheduledDate: scheduledDateObj,
+        user,
+        task,
+        status: 'CONFIRMED',
+        paid: true,
+        paymentSource: 'paypal',
+        payPalCaptureId: payPalCaptureId ?? undefined,
+      });
+      await manager.save(booking);
+
+      return payment;
+    });
   }
 
   async handlePayPalWebhook(input: PayPalWebhookInput): Promise<void> {
@@ -887,23 +1051,38 @@ export class PaymentService {
       return;
     }
 
-    if (!externalReference.startsWith('wallet_deposit:')) {
-      return;
-    }
-
-    const { paymentRecordId } = this.parsePayPalExternalReference(
-      externalReference,
-    );
-
     if (
       eventType === 'PAYMENT.CAPTURE.COMPLETED' ||
       resourceStatus === 'completed'
     ) {
-      await this.finalizeApprovedPayPalPayment(
-        paymentRecordId,
-        null,
-        captureId ?? undefined,
-      );
+      if (externalReference.startsWith('external_payment:')) {
+        try {
+          const { taskId, userId, scheduledDate } =
+            this.parseExternalPaymentReference(externalReference);
+          await this.finalizeExternalPaymentPayPalFromWebhook(
+            taskId,
+            userId,
+            scheduledDate,
+            captureId ?? undefined,
+          );
+        } catch (err) {
+          this.logger.warn(
+            `Webhook external_payment finalization failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+        return;
+      }
+
+      if (externalReference.startsWith('wallet_deposit:')) {
+        const { paymentRecordId } = this.parsePayPalExternalReference(
+          externalReference,
+        );
+        await this.finalizeApprovedPayPalPayment(
+          paymentRecordId,
+          null,
+          captureId ?? undefined,
+        );
+      }
       return;
     }
 
@@ -911,12 +1090,84 @@ export class PaymentService {
       return;
     }
 
-    await this.finalizeFailedPayPalPayment(
-      paymentRecordId,
-      null,
-      resourceStatus ?? eventType?.toLowerCase() ?? 'unknown',
-      captureId ?? undefined,
-    );
+    if (externalReference.startsWith('wallet_deposit:')) {
+      const { paymentRecordId } = this.parsePayPalExternalReference(
+        externalReference,
+      );
+      await this.finalizeFailedPayPalPayment(
+        paymentRecordId,
+        null,
+        resourceStatus ?? eventType?.toLowerCase() ?? 'unknown',
+        captureId ?? undefined,
+      );
+    }
+  }
+
+  private async finalizeExternalPaymentPayPalFromWebhook(
+    taskId: number,
+    userId: number,
+    scheduledDate: string,
+    payPalCaptureId?: string,
+  ): Promise<Payment | void> {
+    return this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(User, {
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const task = await manager.findOne(Task, {
+        where: { id: taskId },
+      });
+      if (!task) {
+        throw new NotFoundException('Task not found');
+      }
+
+      const scheduledDateObj = new Date(scheduledDate);
+      if (isNaN(scheduledDateObj.getTime()) || scheduledDateObj <= new Date()) {
+        throw new BadRequestException('Invalid or past scheduled date');
+      }
+
+      const existingBooking = await manager.findOne(Booking, {
+        where: {
+          task: { id: task.id },
+          scheduledDate: scheduledDateObj,
+        },
+      });
+      if (existingBooking) {
+        return;
+      }
+
+      const taskPrice = Number(task.price);
+      if (!Number.isFinite(taskPrice) || taskPrice <= 0) {
+        throw new BadRequestException('Invalid task price');
+      }
+
+      const payment = manager.create(Payment, {
+        amount: taskPrice,
+        currency: 'BRL',
+        type: 'BOOKING_CHARGE',
+        status: 'COMPLETED',
+        reference: payPalCaptureId ?? `PAYPAL-${taskId}-${Date.now()}`,
+        description: `Pagamento do agendamento para ${task.title} via PayPal`,
+        user,
+      });
+      await manager.save(payment);
+
+      const booking = manager.create(Booking, {
+        scheduledDate: scheduledDateObj,
+        user,
+        task,
+        status: 'CONFIRMED',
+        paid: true,
+        paymentSource: 'paypal',
+        payPalCaptureId: payPalCaptureId ?? undefined,
+      });
+      await manager.save(booking);
+
+      return payment;
+    });
   }
 
   async purchaseTask(purchaseTaskDto: PurchaseTaskDto): Promise<Booking> {
@@ -959,6 +1210,7 @@ export class PaymentService {
         scheduledDate: new Date(),
         status: 'CONFIRMED',
         paid: true,
+        paymentSource: 'wallet',
       });
       return manager.save(booking);
     });

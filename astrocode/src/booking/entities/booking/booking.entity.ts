@@ -23,4 +23,12 @@ export class Booking {
 
   @Column({ type: 'boolean', default: false })
   paid: boolean;
+
+  /** How the booking was paid: 'wallet' (balance) or 'paypal'. Used to route refunds correctly. */
+  @Column({ type: 'varchar', nullable: true })
+  paymentSource?: 'wallet' | 'paypal' | null;
+
+  /** PayPal capture ID when paid via PayPal. Required to process refunds back to PayPal. */
+  @Column({ type: 'varchar', nullable: true })
+  payPalCaptureId?: string | null;
 }

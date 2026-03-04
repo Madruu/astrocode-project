@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsIn,
@@ -66,13 +67,14 @@ export class BlockBookingSlotDto {
 
 export class GetAvailableSlotsQueryDto {
   @ApiProperty({ description: 'The task id' })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsInt()
   taskId: number;
 
-  @ApiProperty({ description: 'Date in YYYY-MM-DD format' })
+  @ApiProperty({ description: 'Date in DD/MM/YYYY or YYYY-MM-DD format' })
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  @Matches(/^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/)
   date: string;
 }

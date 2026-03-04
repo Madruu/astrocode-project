@@ -97,24 +97,26 @@
             </div>
           </header>
 
-          <form class="form-grid" (ngSubmit)="changePassword()">
+          <form class="form-grid" (submit)="changePassword($event, currentPassword.value, newPassword.value, confirmPassword.value)">
             <mat-form-field appearance="outline">
               <mat-label>Senha atual</mat-label>
-              <input matInput type="password" />
+              <input matInput type="password" #currentPassword />
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>Nova senha</mat-label>
-              <input matInput type="password" />
+              <input matInput type="password" #newPassword />
               <mat-hint>Minimo de 6 caracteres</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>Confirmar nova senha</mat-label>
-              <input matInput type="password" />
+              <input matInput type="password" #confirmPassword />
             </mat-form-field>
 
-            <button class="solid-btn" mat-flat-button type="submit">Alterar Senha</button>
+            <button class="solid-btn" mat-flat-button type="submit" [disabled]="isChangingPassword">
+              {{ isChangingPassword ? 'Alterando...' : 'Alterar Senha' }}
+            </button>
           </form>
         </mat-card>
       </div>

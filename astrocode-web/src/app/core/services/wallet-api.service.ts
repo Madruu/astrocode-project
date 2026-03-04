@@ -69,15 +69,22 @@ export class WalletApiService {
 
   createPayPalCheckout$(
     amount: number,
-    purpose: PayPalCheckoutPurpose = 'wallet_deposit'
+    purpose: PayPalCheckoutPurpose = 'wallet_deposit',
+    bookingContext?: { taskId: number; userId: number; scheduledDate: string }
   ): Observable<PayPalCheckoutResponse> {
+    const body: Record<string, unknown> = {
+      amount,
+      currency: 'BRL',
+      purpose,
+    };
+    if (purpose === 'external_payment' && bookingContext) {
+      body['taskId'] = bookingContext.taskId;
+      body['userId'] = bookingContext.userId;
+      body['scheduledDate'] = bookingContext.scheduledDate;
+    }
     return this.http.post<PayPalCheckoutResponse>(
       buildApiUrl('/payment/paypal/checkout'),
-      {
-        amount,
-        currency: 'BRL',
-        purpose,
-      }
+      body
     );
   }
 

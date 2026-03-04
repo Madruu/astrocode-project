@@ -38,24 +38,35 @@ export class ProviderDashboardComponent {
   readonly user$ = this.authService.currentUser$;
   readonly summary$ = this.bookingService.getSummary$();
   readonly servicesCount$ = this.bookingService.getServiceOptions$().pipe(map((services) => services.length));
-  readonly upcomingBookings$ = this.bookingService.getUpcomingBookings$();
-  readonly pendingPayments$ = this.upcomingBookings$.pipe(
-    map((bookings) => ({
-      count: bookings.length,
-      amount: bookings.reduce((total, booking) => total + booking.amount, 0),
-    }))
+
+  /** Revenue stats use payment status (paymentTransactionId) to match the Pagamentos page logic. */
+  readonly revenueStats$ = this.bookingService.getBookings$().pipe(
+    map((bookings) => {
+      const confirmed = bookings.filter((b) => b.status === 'confirmed');
+      const paid = confirmed.filter((b) => b.paymentTransactionId);
+      const pending = confirmed.filter((b) => !b.paymentTransactionId);
+      const totalRevenue = paid.reduce((acc, b) => acc + b.amount, 0);
+      const pendingRevenue = pending.reduce((acc, b) => acc + b.amount, 0);
+      return { totalRevenue, pendingRevenue };
+    })
   );
-  readonly dashboardStats$ = combineLatest([this.summary$, this.servicesCount$, this.pendingPayments$]).pipe(
-    map(([summary, servicesCount, pending]) => {
-      const confirmedRevenue = summary.totalRevenue - pending.amount;
-      const averageRevenue = servicesCount > 0 ? confirmedRevenue / servicesCount : 0;
-      const paymentRate = summary.totalRevenue > 0 ? Math.round((confirmedRevenue / summary.totalRevenue) * 100) : 0;
+
+  readonly dashboardStats$ = combineLatest([
+    this.summary$,
+    this.servicesCount$,
+    this.revenueStats$,
+  ]).pipe(
+    map(([summary, servicesCount, revenue]) => {
+      const averageRevenue = servicesCount > 0 ? revenue.totalRevenue / servicesCount : 0;
+      const totalWithPending = revenue.totalRevenue + revenue.pendingRevenue;
+      const paymentRate =
+        totalWithPending > 0 ? Math.round((revenue.totalRevenue / totalWithPending) * 100) : 0;
 
       return {
         totalBookings: summary.totalBookings,
         activeServices: servicesCount,
-        totalRevenue: confirmedRevenue,
-        pendingRevenue: pending.amount,
+        totalRevenue: revenue.totalRevenue,
+        pendingRevenue: revenue.pendingRevenue,
         averageRevenue,
         paymentRate,
       };
