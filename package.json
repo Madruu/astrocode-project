@@ -6,6 +6,8 @@
   "scripts": {
     "start": "ng serve",
     "build": "ng build",
+    "build:backend": "cd astrocode && npm install && npm run build",
+    "start:prod": "cd astrocode && npm run start:prod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
