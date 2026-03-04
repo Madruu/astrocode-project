@@ -62,6 +62,7 @@ export class TaskService {
       async (transactionManager) => {
         const newTask = transactionManager.create(Task, {
           ...taskDto,
+          durationMinutes: taskDto.durationMinutes ?? 60,
           provider,
         });
         const savedTask = await transactionManager.save(Task, newTask);

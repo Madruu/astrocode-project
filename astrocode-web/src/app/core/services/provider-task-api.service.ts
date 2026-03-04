@@ -24,18 +24,21 @@ interface BackendTask {
   title: string;
   description: string;
   price: number | string;
+  durationMinutes?: number;
 }
 
 interface CreateTaskDto {
   title: string;
   description: string;
   price: number;
+  durationMinutes: number;
 }
 
 interface UpdateTaskDto {
   title?: string;
   description?: string;
   price?: number;
+  durationMinutes?: number;
 }
 
 @Injectable({
@@ -55,6 +58,7 @@ export class ProviderTaskApiService {
       title: input.name.trim(),
       description: input.description.trim(),
       price: Number(input.price),
+      durationMinutes: Number(input.durationMinutes),
     };
     return this.http
       .post<BackendTask>(buildApiUrl('/task'), payload)
@@ -66,6 +70,7 @@ export class ProviderTaskApiService {
       title: input.name.trim(),
       description: input.description.trim(),
       price: Number(input.price),
+      durationMinutes: Number(input.durationMinutes),
     };
     return this.http
       .put<BackendTask>(buildApiUrl(`/task/${taskId}`), payload)
@@ -81,7 +86,7 @@ export class ProviderTaskApiService {
       id: String(task.id),
       name: task.title,
       description: task.description,
-      durationMinutes: fallbackDurationMinutes,
+      durationMinutes: task.durationMinutes ?? fallbackDurationMinutes,
       price: Number(task.price),
     };
   }

@@ -16,4 +16,9 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsNumber()
   price?: number;
+
+  @ApiProperty({ description: 'Duration in minutes' })
+  @IsOptional()
+  @IsNumber()
+  durationMinutes?: number;
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber, IsInt } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsInt, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 export class CreateTaskDto {
   @ApiProperty({ description: 'The title of the task' })
@@ -15,6 +15,11 @@ export class CreateTaskDto {
   @IsNotEmpty()
   @IsNumber()
   price: number;
+
+  @ApiProperty({ description: 'Duration in minutes', default: 60, required: false })
+  @IsOptional()
+  @IsNumber()
+  durationMinutes?: number;
 }
 
 export class PurchaseTaskDto {

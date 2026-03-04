@@ -27,6 +27,9 @@ export class Task {
   @Column({ type: 'numeric', default: 0, transformer: numericTransformer })
   price: number = 0;
 
+  @Column({ type: 'int', default: 60 })
+  durationMinutes: number = 60;
+
   @ManyToOne(() => User, (provider) => provider.tasksProvided, {
     nullable: true,
     onDelete: 'SET NULL',
