@@ -57,7 +57,7 @@ export const routes: Routes = [
   },
   {
     path: 'schedule',
-    canActivate: [authGuard],
+    canActivate: [authGuard, userOnlyGuard],
     loadComponent: () =>
       import('./features/schedule/pages/schedule/schedule.component').then((m) => m.ScheduleComponent),
   },
