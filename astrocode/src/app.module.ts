@@ -12,16 +12,26 @@ import { PaymentModule } from './payment/payment.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST ?? 'localhost',
-      port: parseInt(process.env.DB_PORT ?? '5432', 10),
-      username: process.env.DB_USERNAME ?? 'postgres',
-      password: process.env.DB_PASSWORD ?? 'joaojoao2003',
-      database: process.env.DB_DATABASE ?? 'astrocode',
-      autoLoadEntities: true,
-      synchronize: true,
-    }),
+    TypeOrmModule.forRoot(
+      process.env.DATABASE_URL
+        ? {
+            type: 'postgres',
+            url: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false },
+            autoLoadEntities: true,
+            synchronize: true,
+          }
+        : {
+            type: 'postgres',
+            host: process.env.DB_HOST ?? 'localhost',
+            port: parseInt(process.env.DB_PORT ?? '5432', 10),
+            username: process.env.DB_USERNAME ?? 'postgres',
+            password: process.env.DB_PASSWORD ?? 'joaojoao2003',
+            database: process.env.DB_DATABASE ?? 'astrocode',
+            autoLoadEntities: true,
+            synchronize: true,
+          },
+    ),
     UserModule,
     AuthModule,
     TaskModule,
