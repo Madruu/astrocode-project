@@ -5,41 +5,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const extraOrigins = process.env.CORS_ORIGINS?.split(',')
-    .map((s) => s.trim())
-    .filter(Boolean) ?? [];
-  const allowedOrigins = new Set([
-    'http://localhost:4200',
-    'http://127.0.0.1:4200',
-    process.env.PAYPAL_FRONTEND_URL?.replace(/\/account\/?$/, ''),
-    process.env.MP_FRONTEND_URL?.replace(/\/account\/?$/, ''),
-    ...extraOrigins,
-  ]);
-  const isRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_DEPLOYMENT_ID);
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      // On Railway: allow all origins (Vercel preview URLs, custom domains, etc.)
-      if (isRailway) {
-        callback(null, true);
-        return;
-      }
-      if (
-        allowedOrigins.has(origin) ||
-        /^https:\/\/.+\.ngrok-free\.dev$/.test(origin) ||
-        /^https:\/\/.+\.vercel\.app$/.test(origin)
-      ) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error(`Origin ${origin} not allowed by CORS`), false);
-    },
+    origin: true, // Allow any origin (reflects request origin for credentials)
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    exposedHeaders: ['Authorization'],
   });
   app.useGlobalPipes(
     new ValidationPipe({
