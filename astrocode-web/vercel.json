@@ -3,6 +3,10 @@
   "outputDirectory": "dist/astrocode-web/browser",
   "framework": null,
   "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://astrocode-project-production.up.railway.app/:path*"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
